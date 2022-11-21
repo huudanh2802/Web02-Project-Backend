@@ -1,11 +1,14 @@
-import './pre-start'; // Must be the first import
-import logger from 'jet-logger';
+import "./pre-start"; // Must be the first import
 
-import EnvVars from '@src/declarations/major/EnvVars';
-import server from './server';
-
+import EnvVars from "@src/declarations/major/EnvVars";
+import mongoose from "mongoose";
+import server from "./server";
 
 // **** Start server **** //
 
-const msg = ('Express server started on port: ' + EnvVars.port.toString());
-server.listen(EnvVars.port, () => logger.info(msg));
+// const msg = `Express server started on port: ${EnvVars.port.toString()}`;
+
+mongoose.connect(EnvVars.db).then(() => {
+  // console.log("connect success");
+  server.listen(EnvVars.port);
+});

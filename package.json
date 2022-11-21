@@ -7,8 +7,7 @@
     "lint:tests": "npx eslint --ext .ts spec/",
     "start": "node -r module-alias/register ./dist --env=production",
     "dev": "nodemon",
-    "test": "nodemon --config ./spec/nodemon.json",
-    "test:no-reloading": "npx ts-node --files -r tsconfig-paths/register ./spec"
+    "prepare": "husky install"
   },
   "nodemonConfig": {
     "watch": [
@@ -27,44 +26,50 @@
     "node": ">=8.10.0"
   },
   "dependencies": {
-    "bcrypt": "^5.1.0",
     "command-line-args": "^5.2.1",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.3",
+    "eslint-import-resolver-typescript": "^3.5.2",
     "express": "^4.18.2",
     "express-async-errors": "^3.1.1",
     "helmet": "^6.0.0",
-    "jet-logger": "^1.2.6",
-    "jet-validator": "^1.0.4",
-    "jsonfile": "^6.1.0",
-    "jsonwebtoken": "^8.5.1",
+    "husky": "^8.0.2",
     "module-alias": "^2.2.2",
-    "morgan": "^1.10.0"
+    "mongoose": "^6.7.2",
+    "mongoose-slug-generator": "^1.0.4",
+    "morgan": "^1.10.0",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.5.7",
+    "tsyringe": "^4.7.0",
+    "typescript": "^4.8.4",
+    "fs-extra": "^10.1.0",
+    "tsconfig-paths": "^4.1.0"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.0",
     "@types/command-line-args": "^5.2.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/express": "^4.17.14",
     "@types/find": "^0.2.1",
     "@types/fs-extra": "^9.0.13",
-    "@types/jasmine": "^4.3.0",
-    "@types/jsonfile": "^6.1.0",
-    "@types/jsonwebtoken": "^8.5.9",
     "@types/morgan": "^1.9.3",
     "@types/node": "^18.11.9",
     "@types/supertest": "^2.0.12",
-    "@typescript-eslint/eslint-plugin": "^5.42.1",
-    "@typescript-eslint/parser": "^5.42.1",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.43.0",
     "eslint": "^8.27.0",
-    "eslint-plugin-node": "^11.1.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jsx-a11y": "^6.6.1",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.31.11",
     "find": "^0.3.0",
-    "fs-extra": "^10.1.0",
-    "jasmine": "^4.5.0",
+    "lint-staged": "^13.0.3",
     "nodemon": "^2.0.20",
-    "supertest": "^6.3.1",
-    "ts-node": "^10.9.1",
-    "tsconfig-paths": "^4.1.0",
-    "typescript": "^4.8.4"
+    "prettier": "^2.7.1",
+    "ts-node": "^10.9.1"
+  },
+  "lint-staged": {
+    "*.ts": "eslint --cache --fix --config ./.eslintrc.json --ext js --ext ts --ext jsx --ext tsx "
   }
 }

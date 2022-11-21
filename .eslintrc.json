@@ -1,42 +1,51 @@
 {
-  "parser": "@typescript-eslint/parser",
-  "plugins": [
-    "@typescript-eslint"
-  ],
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    "plugin:node/recommended"
-  ],
-  "parserOptions": {
-    "project": "./tsconfig.json"
-  },
-  "rules": {
-    "max-len": [
-      "warn",
-      {
-        "code": 80
-      }
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "airbnb",
+        "plugin:prettier/recommended"
     ],
-    "comma-dangle": ["warn", "always-multiline"],
-    "no-console": 1,
-    "no-extra-boolean-cast": 0,
-    "semi": 1,
-    "indent": ["warn", 2],
-    "@typescript-eslint/no-misused-promises": 0,
-    "@typescript-eslint/no-floating-promises": 0,
-    "node/no-process-env": 1,
-    "node/no-unsupported-features/es-syntax": [
-      "error",
-      { "ignores" : ["modules"] }
+    "overrides": [
     ],
-    "node/no-missing-import": 0,
-    "node/no-unpublished-import": 0
-  },
-  "settings": {
-    "node": {
-      "tryExtensions": [".js", ".json", ".node", ".ts"]
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "rules": {
+      "import/extensions": [
+        "error",
+        "ignorePackages",
+        {
+          "js": "never",
+          "jsx": "never",
+          "ts": "never",
+          "tsx": "never"
+        }
+     ],
+     "no-unused-vars": "off" ,
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"]
+    },
+    "settings": {
+        "import/resolver": {
+          "node": {
+            "extensions": [".js", ".jsx", ".ts", ".tsx"]
+          },
+          "typescript": {
+            "alwaysTryTypes": true, // always try to resolve types under `<root>@types` directory even it doesn't contain any source code, like `@types/unist`
+            "project": "src"
+          }
+        },
+        "import/parsers": {
+          "@typescript-eslint/parser": [".ts", ".tsx"]
+        }
     }
-  }
 }
