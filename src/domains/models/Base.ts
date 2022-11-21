@@ -1,3 +1,4 @@
+import { ModelName } from "@src/declarations/enums";
 import { Schema, Types } from "mongoose";
 
 export interface IBase {
@@ -7,5 +8,5 @@ export interface IBase {
 export default abstract class BaseModel {
   abstract schema: Schema;
 
-  abstract modelName: string;
+  abstract modelName: ModelName;
 }

@@ -1,3 +1,4 @@
+import { ModelName } from "@src/declarations/enums";
 import { Schema } from "mongoose";
 import BaseModel, { IBase } from "./Base";
 
@@ -14,5 +15,5 @@ const userSchema = new Schema<IUser>({
 export class UserModel extends BaseModel {
   schema = userSchema;
 
-  modelName = "user";
+  modelName = ModelName.UserModel;
 }
