@@ -13,5 +13,9 @@ export default {
       secure: process.env.SECURE_COOKIE === "true"
     }
   },
+  jwt: {
+    secret: process.env.JWT_SECRET ?? "",
+    exp: process.env.COOKIE_EXP ?? "" // exp at the same time as the cookie
+  },
   db: process.env.DB ?? ""
 } as const;
