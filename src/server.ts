@@ -10,6 +10,7 @@ import { NodeEnvs } from "@src/declarations/enums";
 import RouteError from "@src/declarations/classes";
 import UserController from "@src/controllers/UserController";
 import passport from "passport";
+import passportStrategy from "@src/utils/passport";
 
 // **** Init express **** //
 
@@ -37,7 +38,7 @@ if (EnvVars.nodeEnv === NodeEnvs.Dev) {
 // Security
 
 app.use(passport.initialize());
-app.use(passport.session());
+passportStrategy(passport);
 
 // **** Add API routes **** //
 

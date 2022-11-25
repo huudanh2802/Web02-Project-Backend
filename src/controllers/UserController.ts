@@ -1,7 +1,5 @@
 /* eslint-disable no-return-await */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable class-methods-use-this */
 import { LoginDTO } from "@src/domains/dtos/LoginDTO";
 import { IUser } from "@src/domains/models/User";
 import UserService from "@src/services/UserService";
@@ -11,9 +9,9 @@ import { autoInjectable } from "tsyringe";
 import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
 import { IReq, IRes } from "@src/domains/entities/types";
 import EnvVars from "@src/declarations/major/EnvVars";
-import passport from "passport";
-import auth from "@src/utils/auth";
 import SignupDTO from "@src/domains/dtos/SignUpDTO";
+import passport from "passport";
+import jwt from "jsonwebtoken";
 
 @autoInjectable()
 export default class UserController {
@@ -32,10 +30,11 @@ export default class UserController {
 
   async login(_req: any, _res: IRes) {
     const login: LoginDTO = _req.body;
-    const jwt = await auth.getJwt(login.email, login.password);
-    const { key, options } = EnvVars.cookieProps;
-    _res.cookie(key, jwt, options);
-    return _res.status(HttpStatusCodes.OK).end();
+    const account = await this.userService.login(login);
+    const { id } = account;
+    const token = jwt.sign({ id }, EnvVars.jwt.secret, { expiresIn: "1d" });
+
+    return _res.status(HttpStatusCodes.OK).json({ token }).end();
   }
 
   async signup(_req: any, _res: IRes) {
@@ -48,6 +47,12 @@ export default class UserController {
     const { emailToken } = _req.params;
     await this.userService.activeAccount(emailToken);
     return _res.status(HttpStatusCodes.OK).end();
+  }
+
+  async getUser(_req: any, _res: IRes) {
+    const { id } = _req.params;
+    const result = await this.userService.getUser(id);
+    return _res.status(HttpStatusCodes.OK).send(result).end();
   }
 
   routes() {
@@ -65,6 +70,11 @@ export default class UserController {
     this.router.get(
       "/verify/:emailToken",
       async (_req, res) => await this.activeAccount(_req, res)
+    );
+    this.router.get(
+      "/get/:id",
+      passport.authenticate("jwt", { session: false }),
+      async (_req, res) => await this.getUser(_req, res)
     );
     return this.router;
   }

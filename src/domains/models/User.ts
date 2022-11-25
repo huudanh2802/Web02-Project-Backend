@@ -27,24 +27,6 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-userSchema.methods = {
-  createToken() {
-    return jwt.sign(
-      {
-        _id: this._id
-      },
-      EnvVars.cookieProps.secret
-    );
-  },
-  toJSON() {
-    return {
-      _id: this._id,
-      userName: this.email,
-      token: `JWT ${this.createToken()}`
-    };
-  }
-};
-
 export class UserModel extends BaseModel {
   schema = userSchema;
 

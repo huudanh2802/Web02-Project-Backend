@@ -28,15 +28,22 @@ export default class UserService {
     return this.userRepository.all();
   }
 
+  getUser(id: Types.ObjectId) {
+    return this.userRepository.get(id);
+  }
+
   async login(login: LoginDTO) {
-    const account = await this.userRepository.getByEmail(login.email);
-    if (!account) {
+    const user = await this.userRepository.getByEmail(login.email);
+    if (!user) {
       throw new RouteError(HttpStatusCodes.NOT_FOUND, "User cannot be found");
     }
-    const checkPass = await bcrypt.compare(login.password, account.password);
+
+    // Check password
+    const checkPass = await bcrypt.compare(login.password, user.password);
     if (!checkPass) {
-      throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Invalid password");
+      throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Invalid Password");
     }
+    return user;
   }
 
   async signup(signup: SignupDTO) {
@@ -71,7 +78,7 @@ export default class UserService {
       role: 0,
       emailToken,
       active: false,
-      _id: new Types.ObjectId()
+      id: new Types.ObjectId()
     };
 
     await this.userRepository.create(newUser);

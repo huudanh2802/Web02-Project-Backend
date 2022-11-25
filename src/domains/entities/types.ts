@@ -1,8 +1,6 @@
 import * as e from "express";
 import { Query } from "express-serve-static-core";
 
-import { ISessionUser } from "@src/utils/auth";
-
 // **** Express **** //
 
 export interface IReq<T = void> extends e.Request {

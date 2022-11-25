@@ -14,9 +14,9 @@ export default class BaseRepository<T1 extends BaseModel, T2 extends IBase> {
     return result;
   }
 
-  async get(_id: Types.ObjectId) {
+  async get(id: Types.ObjectId) {
     // eslint-disable-next-line object-shorthand
-    const result = await this.set.findOne({ _id: _id });
+    const result = await this.set.findOne({ _id: id });
     return result;
   }
 
