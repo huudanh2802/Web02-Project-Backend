@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
 import RouteError from "@src/declarations/classes";
 import UserRepository from "@src/repos/UserRepository";
@@ -48,8 +49,8 @@ async function getJwt(email: string, password: string): Promise<string> {
   }
   // Setup Admin Cookie
   return jwtUtil.sign({
-    id: user.id,
-    email: user.name
+    id: user._id,
+    email: user.email
   });
 }
 

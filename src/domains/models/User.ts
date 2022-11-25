@@ -9,7 +9,7 @@ export interface IUser extends IBase {
   email: string;
   password: string;
   role: number; // 0: Teacher, 1: Student
-  emailToken: string;
+  emailToken: string | null;
   active: boolean;
 }
 
@@ -18,6 +18,7 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true },
     password: { type: String, required: true },
     role: { type: Number, required: true, default: 0 },
+    // eslint-disable-next-line no-bitwise
     emailToken: { type: String },
     active: { type: Boolean, default: false }
   },

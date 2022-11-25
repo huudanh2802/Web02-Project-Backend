@@ -10,10 +10,18 @@ export default class UserRepository extends BaseRepository<UserModel, IUser> {
     super(usermodel);
   }
 
-  async getByEmail(loginEmail: string) {
+  async getByEmail(loginEmail: string): Promise<IUser> {
     // eslint-disable-next-line no-console
     const result = await this.set.findOne({ email: loginEmail });
 
     return result;
+  }
+
+  async activeEmailToken(emailToken: string): Promise<IUser> {
+    const account = await this.set.findOneAndUpdate(
+      { emailToken: emailToken },
+      { emailToken: null, active: true }
+    );
+    return account;
   }
 }

@@ -1,4 +1,5 @@
 export default {
+  host: process.env.HOST ?? "",
   nodeEnv: process.env.NODE_ENV ?? "",
   port: process.env.PORT ?? 0,
   cookieProps: {
@@ -17,5 +18,9 @@ export default {
     secret: process.env.JWT_SECRET ?? "",
     exp: process.env.COOKIE_EXP ?? "" // exp at the same time as the cookie
   },
-  db: process.env.DB ?? ""
+  db: process.env.DB ?? "",
+  email: {
+    name: process.env.EMAIL ?? "",
+    password: process.env.EMAILPASS ?? ""
+  }
 } as const;

@@ -1,7 +1,6 @@
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import express, { NextFunction, Request, Response } from "express";
-// import { NextFunction } from "express";
 import "reflect-metadata";
 import { container } from "tsyringe";
 import "express-async-errors";
@@ -11,11 +10,7 @@ import { NodeEnvs } from "@src/declarations/enums";
 import RouteError from "@src/declarations/classes";
 import UserController from "@src/controllers/UserController";
 import passport from "passport";
-import { createMap, createMapper } from "@automapper/core";
-import { pojos } from "@automapper/pojos";
-import { IUser } from "./domains/models/User";
-import { LoginDTO } from "./domains/dtos/LoginDTO";
-import UserMapping from "./mapper/UserMapper";
+
 // **** Init express **** //
 
 const app = express();
@@ -43,15 +38,6 @@ if (EnvVars.nodeEnv === NodeEnvs.Dev) {
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-// Mapper
-const mapper = createMapper({
-  strategyInitializer: pojos()
-});
-const userMapping = new UserMapping();
-userMapping.createUser();
-userMapping.createLoginDTO();
-createMap<IUser, LoginDTO>(mapper, "IUser", "LoginDTO");
 
 // **** Add API routes **** //
 

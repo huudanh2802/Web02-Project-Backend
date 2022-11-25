@@ -19,4 +19,8 @@ export default class BaseRepository<T1 extends BaseModel, T2 extends IBase> {
     const result = await this.set.findOne({ _id: _id });
     return result;
   }
+
+  async create(createModel: T2) {
+    await this.set.create(createModel);
+  }
 }
