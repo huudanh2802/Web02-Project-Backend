@@ -75,7 +75,6 @@ export default class UserService {
     const newUser: IUser = {
       email: signup.email,
       password: hashPassword,
-      role: 0,
       emailToken,
       active: false,
       id: new Types.ObjectId()
