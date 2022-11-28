@@ -1,5 +1,6 @@
 /* eslint-disable object-shorthand */
 import { IUser, UserModel } from "@src/domains/models/User";
+import { Types } from "mongoose";
 import { injectable } from "tsyringe";
 import BaseRepository from "./BaseRepository";
 
@@ -23,5 +24,10 @@ export default class UserRepository extends BaseRepository<UserModel, IUser> {
       { emailToken: null, active: true }
     );
     return account;
+  }
+
+  async getMember(_id: Types.ObjectId) {
+    const result = await this.set.find({ _id: { $ne: _id } });
+    return result;
   }
 }

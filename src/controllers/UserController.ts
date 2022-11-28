@@ -7,7 +7,7 @@ import { Router } from "express";
 
 import { autoInjectable } from "tsyringe";
 import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
-import { IReq, IRes } from "@src/domains/entities/types";
+import { IRes } from "@src/domains/entities/types";
 import EnvVars from "@src/declarations/major/EnvVars";
 import SignupDTO from "@src/domains/dtos/SignUpDTO";
 import passport from "passport";
@@ -22,6 +22,34 @@ export default class UserController {
   constructor(userService: UserService) {
     this.userService = userService;
     this.router = Router();
+  }
+
+  routes() {
+    this.router.get("/get", async (_req, res) =>
+      res.send(await this.getUsers())
+    );
+    this.router.post(
+      "/login",
+      async (_req, res) => await this.login(_req, res)
+    );
+    this.router.post(
+      "/signup",
+      async (_req, res) => await this.signup(_req, res)
+    );
+    this.router.get(
+      "/verify/:emailToken",
+      async (_req, res) => await this.activeAccount(_req, res)
+    );
+    this.router.get(
+      "/get/:id",
+      passport.authenticate("jwt", { session: false }),
+      async (_req, res) => await this.getUser(_req, res)
+    );
+    this.router.get(
+      "/memberselection/:id",
+      async (_req, res) => await this.getMemberSelection(_req, res)
+    );
+    return this.router;
   }
 
   getUsers(): Promise<IUser[]> {
@@ -55,27 +83,15 @@ export default class UserController {
     return _res.status(HttpStatusCodes.OK).send(result).end();
   }
 
-  routes() {
-    this.router.get("/get", async (_req, res) =>
-      res.send(await this.getUsers())
-    );
-    this.router.post(
-      "/login",
-      async (_req, res) => await this.login(_req, res)
-    );
-    this.router.post(
-      "/signup",
-      async (_req, res) => await this.signup(_req, res)
-    );
-    this.router.get(
-      "/verify/:emailToken",
-      async (_req, res) => await this.activeAccount(_req, res)
-    );
-    this.router.get(
-      "/get/:id",
-      passport.authenticate("jwt", { session: false }),
-      async (_req, res) => await this.getUser(_req, res)
-    );
-    return this.router;
+  async getMemberSelection(req: any, res: IRes) {
+    const { id } = req.params;
+    const result = await this.userService.getMember(id);
+    const mapResult = result.map((u) => ({
+      id: u.id,
+      email: u.email
+    }));
+    res.header("Access-Control-Allow-Origin", "*");
+
+    return res.status(HttpStatusCodes.OK).send(mapResult).end();
   }
 }

@@ -83,6 +83,11 @@ export default class UserService {
     await this.userRepository.create(newUser);
   }
 
+  async getMember(_id: Types.ObjectId): Promise<IUser[]> {
+    const result = await this.userRepository.getMember(_id);
+    return result;
+  }
+
   async activeAccount(emailToken: string) {
     const account = await this.userRepository.activeEmailToken(emailToken);
     return account;

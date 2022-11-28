@@ -9,5 +9,6 @@ export enum NodeEnvs {
 }
 
 export enum ModelName {
-  UserModel = "user"
+  UserModel = "user",
+  GroupModel = "group"
 }
