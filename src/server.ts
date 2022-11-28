@@ -11,13 +11,14 @@ import RouteError from "@src/declarations/classes";
 import UserController from "@src/controllers/UserController";
 import passport from "passport";
 import passportStrategy from "@src/utils/passport";
-
+import cors from "cors";
 // **** Init express **** //
 
 const app = express();
 
 // **** Set basic express settings **** //
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(EnvVars.cookieProps.secret));

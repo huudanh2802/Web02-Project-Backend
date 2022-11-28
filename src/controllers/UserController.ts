@@ -34,7 +34,10 @@ export default class UserController {
     const { id } = account;
     const token = jwt.sign({ id }, EnvVars.jwt.secret, { expiresIn: "1d" });
 
-    return _res.status(HttpStatusCodes.OK).json({ token }).end();
+    return _res
+      .status(HttpStatusCodes.OK)
+      .json({ token, id: account.id, email: account.email })
+      .end();
   }
 
   async signup(_req: any, _res: IRes) {
