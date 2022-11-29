@@ -93,12 +93,10 @@ export default class UserService {
   async googleAuthen(google: GoogleDTO) {
     const user = await this.userRepository.getByEmail(google.email);
     if (!user) {
-      const emailToken = crypto.randomBytes(20).toString("hex");
-
       const newUser: IUser = {
         email: google.email,
         password: "!NULL",
-        emailToken,
+        emailToken: null,
         active: true,
         id: new Types.ObjectId()
       };
