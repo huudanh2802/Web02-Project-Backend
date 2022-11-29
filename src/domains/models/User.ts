@@ -5,6 +5,8 @@ import BaseModel, { IBase } from "./Base";
 
 export interface IUser extends IBase {
   email: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
   password: string;
   emailToken: string | null;
   active: boolean;

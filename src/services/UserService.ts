@@ -77,7 +77,9 @@ export default class UserService {
       password: hashPassword,
       emailToken,
       active: false,
-      id: new Types.ObjectId()
+      id: new Types.ObjectId(),
+      createdAt: null,
+      updatedAt: null
     };
 
     await this.userRepository.create(newUser);
