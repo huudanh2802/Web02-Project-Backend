@@ -10,6 +10,7 @@ import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
 import { IReq, IRes } from "@src/domains/entities/types";
 import EnvVars from "@src/declarations/major/EnvVars";
 import SignupDTO from "@src/domains/dtos/SignUpDTO";
+import { GoogleDTO } from "@src/domains/dtos/GoogleDTO";
 import passport from "passport";
 import jwt from "jsonwebtoken";
 
@@ -46,6 +47,18 @@ export default class UserController {
     return _res.status(HttpStatusCodes.OK).end();
   }
 
+  async googleAuthen(_req: any, _res: IRes) {
+    const google: GoogleDTO = _req.body;
+    const { user, newAccount } = await this.userService.googleAuthen(google);
+    const { id } = user;
+    const token = jwt.sign({ id }, EnvVars.jwt.secret, { expiresIn: "1d" });
+
+    return _res
+      .status(HttpStatusCodes.OK)
+      .json({ token, id: user.id, email: user.email, newAccount })
+      .end();
+  }
+
   async activeAccount(_req: any, _res: IRes) {
     const { emailToken } = _req.params;
     await this.userService.activeAccount(emailToken);
@@ -69,6 +82,10 @@ export default class UserController {
     this.router.post(
       "/signup",
       async (_req, res) => await this.signup(_req, res)
+    );
+    this.router.post(
+      "/googleAuthen",
+      async (_req, res) => await this.googleAuthen(_req, res)
     );
     this.router.get(
       "/verify/:emailToken",

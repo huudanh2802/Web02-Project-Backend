@@ -8,6 +8,7 @@ import RouteError from "@src/declarations/classes";
 import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
 import { LoginDTO } from "@src/domains/dtos/LoginDTO";
 import SignupDTO from "@src/domains/dtos/SignUpDTO";
+import { GoogleDTO } from "@src/domains/dtos/GoogleDTO";
 
 import * as crypto from "crypto";
 import EnvVars from "@src/declarations/major/EnvVars";
@@ -87,6 +88,34 @@ export default class UserService {
     };
 
     await this.userRepository.create(newUser);
+  }
+
+  async googleAuthen(google: GoogleDTO) {
+    const user = await this.userRepository.getByEmail(google.email);
+    if (!user) {
+      const emailToken = crypto.randomBytes(20).toString("hex");
+
+      const newUser: IUser = {
+        email: google.email,
+        password: "!NULL",
+        emailToken,
+        active: true,
+        id: new Types.ObjectId()
+      };
+
+      await this.userRepository.create(newUser);
+      return { user: newUser, newAccount: true };
+    }
+
+    // Check Active
+    if (!user.active) {
+      throw new RouteError(
+        HttpStatusCodes.UNAUTHORIZED,
+        "Account has not been active"
+      );
+    }
+
+    return { user, newAccount: false };
   }
 
   async activeAccount(emailToken: string) {
