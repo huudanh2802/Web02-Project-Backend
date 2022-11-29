@@ -37,7 +37,13 @@ export default class UserService {
     if (!user) {
       throw new RouteError(HttpStatusCodes.NOT_FOUND, "User cannot be found");
     }
-
+    // Check Active
+    if (!user.active) {
+      throw new RouteError(
+        HttpStatusCodes.UNAUTHORIZED,
+        "Account has not been active"
+      );
+    }
     // Check password
     const checkPass = await bcrypt.compare(login.password, user.password);
     if (!checkPass) {
@@ -63,7 +69,7 @@ export default class UserService {
       subject: "Email verification",
       html: `<div style="background-color: #0fbbad; padding: 2em 2em;">
                     <h1 style="text-align: center;">Thank you for registering on our web</h1>
-                    <h4 style="text-align: center;">Please click <a href="http://${EnvVars.host}/user/verify/${emailToken}">here</a> to activate your account</h4>
+                    <h4 style="text-align: center;">Please click <a href="http://${EnvVars.clientHost}/confirm/${emailToken}">here</a> to activate your account</h4>
                 </div>`
     };
 

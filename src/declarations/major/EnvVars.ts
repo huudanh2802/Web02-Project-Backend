@@ -22,5 +22,6 @@ export default {
   email: {
     name: process.env.EMAIL ?? "",
     password: process.env.EMAILPASS ?? ""
-  }
+  },
+  clientHost: process.env.CLIENTHOST ?? ""
 } as const;
