@@ -14,6 +14,7 @@ import * as crypto from "crypto";
 import EnvVars from "@src/declarations/major/EnvVars";
 import mailer from "@src/utils/nodemailler";
 import { Types } from "mongoose";
+import UpdateUserDTO from "@src/domains/dtos/UpdateUserDTO";
 
 @injectable()
 export default class UserService {
@@ -86,7 +87,8 @@ export default class UserService {
       active: false,
       id: new Types.ObjectId(),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      fullName: signup.fullName
     };
 
     await this.userRepository.create(newUser);
@@ -102,7 +104,8 @@ export default class UserService {
         password: "!NULL",
         emailToken: null,
         active: true,
-        id: new Types.ObjectId()
+        id: new Types.ObjectId(),
+        fullName: "Google Account"
       };
 
       await this.userRepository.create(newUser);
@@ -128,5 +131,10 @@ export default class UserService {
   async activeAccount(emailToken: string) {
     const account = await this.userRepository.activeEmailToken(emailToken);
     return account;
+  }
+
+  async updateName(name: UpdateUserDTO) {
+    const newName = await this.userRepository.updateName(name);
+    return newName;
   }
 }

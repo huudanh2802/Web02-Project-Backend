@@ -1,4 +1,5 @@
 /* eslint-disable object-shorthand */
+import UpdateUserDTO from "@src/domains/dtos/UpdateUserDTO";
 import { IUser, UserModel } from "@src/domains/models/User";
 import { Types } from "mongoose";
 import { injectable } from "tsyringe";
@@ -28,6 +29,14 @@ export default class UserRepository extends BaseRepository<UserModel, IUser> {
 
   async getMember(_id: Types.ObjectId) {
     const result = await this.set.find({ _id: { $ne: _id } });
+    return result;
+  }
+
+  async updateName(name: UpdateUserDTO) {
+    const result = await this.set.findOneAndUpdate(
+      { _id: name.id },
+      { fullName: name.newName }
+    );
     return result;
   }
 }

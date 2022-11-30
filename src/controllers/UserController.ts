@@ -49,7 +49,19 @@ export default class UserController {
       "/memberselection/:id",
       async (_req, res) => await this.getMemberSelection(_req, res)
     );
+    this.router.put(
+      "/user",
+      async (_req, res) => await this.updateUser(_req, res)
+    );
     return this.router;
+  }
+
+  async updateUser(_req: any, res: IRes) {
+    const updateName = _req.body;
+    // eslint-disable-next-line no-console
+    const a = await this.userService.updateName(updateName);
+    console.log(a);
+    return res.status(HttpStatusCodes.OK).end();
   }
 
   getUsers(): Promise<IUser[]> {
@@ -95,11 +107,13 @@ export default class UserController {
   async getUser(_req: any, _res: IRes) {
     const { id } = _req.params;
     const result = await this.userService.getUser(id);
+
     return _res
       .status(HttpStatusCodes.OK)
       .send({
         email: result.email,
-        date: result.createdAt.toJSON().slice(0, 10).replace(/-/g, "/")
+        date: result.createdAt.toJSON().slice(0, 10).replace(/-/g, "/"),
+        fullName: result.fullName
       })
       .end();
   }
