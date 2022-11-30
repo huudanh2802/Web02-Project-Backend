@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import "./pre-start"; // Must be the first import
 
 import EnvVars from "@src/declarations/major/EnvVars";
@@ -9,6 +10,6 @@ import server from "./server";
 // const msg = `Express server started on port: ${EnvVars.port.toString()}`;
 
 mongoose.connect(EnvVars.db).then(() => {
-  // console.log("connect success");
+  console.log("connect success");
   server.listen(EnvVars.port);
 });

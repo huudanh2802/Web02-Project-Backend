@@ -84,7 +84,9 @@ export default class UserService {
       password: hashPassword,
       emailToken,
       active: false,
-      id: new Types.ObjectId()
+      id: new Types.ObjectId(),
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     await this.userRepository.create(newUser);
@@ -95,6 +97,8 @@ export default class UserService {
     if (!user) {
       const newUser: IUser = {
         email: google.email,
+        createdAt: new Date(),
+        updatedAt: new Date(),
         password: "!NULL",
         emailToken: null,
         active: true,
@@ -114,6 +118,11 @@ export default class UserService {
     }
 
     return { user, newAccount: false };
+  }
+
+  async getMember(_id: Types.ObjectId): Promise<IUser[]> {
+    const result = await this.userRepository.getMember(_id);
+    return result;
   }
 
   async activeAccount(emailToken: string) {

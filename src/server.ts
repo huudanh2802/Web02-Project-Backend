@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import express, { NextFunction, Request, Response } from "express";
+import cors from "cors";
 import "reflect-metadata";
 import { container } from "tsyringe";
 import "express-async-errors";
@@ -8,10 +9,12 @@ import EnvVars from "@src/declarations/major/EnvVars";
 import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
 import { NodeEnvs } from "@src/declarations/enums";
 import RouteError from "@src/declarations/classes";
-import UserController from "@src/controllers/UserController";
 import passport from "passport";
 import passportStrategy from "@src/utils/passport";
-import cors from "cors";
+
+import GroupController from "@src/controllers/GroupController";
+import UserController from "./controllers/UserController";
+
 // **** Init express **** //
 
 const app = express();
@@ -44,7 +47,9 @@ passportStrategy(passport);
 // **** Add API routes **** //
 
 // Add Controllers
+
 app.use("/user", container.resolve(UserController).routes());
+app.use("/group", container.resolve(GroupController).routes());
 
 // Setup error handler
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
