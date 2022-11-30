@@ -5,6 +5,7 @@ import BaseModel, { IBase } from "./Base";
 
 export interface IUser extends IBase {
   email: string;
+  fullname: string;
   password: string;
   emailToken: string | null;
   active: boolean;
@@ -15,6 +16,7 @@ export interface IUser extends IBase {
 const userSchema = new Schema<IUser>(
   {
     email: { type: String, required: true },
+    fullname: { type: String, required: true },
     password: { type: String, required: true },
     // eslint-disable-next-line no-bitwise
     emailToken: { type: String },

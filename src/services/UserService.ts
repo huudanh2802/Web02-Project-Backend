@@ -82,6 +82,7 @@ export default class UserService {
     const newUser: IUser = {
       email: signup.email,
       password: hashPassword,
+      fullname: signup.fullname,
       emailToken,
       active: false,
       id: new Types.ObjectId(),
@@ -97,6 +98,7 @@ export default class UserService {
     if (!user) {
       const newUser: IUser = {
         email: google.email,
+        fullname: google.fullname,
         createdAt: new Date(),
         updatedAt: new Date(),
         password: "!NULL",
