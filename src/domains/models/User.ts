@@ -11,7 +11,6 @@ export interface IUser extends IBase {
   active: boolean;
   createdAt: Date;
   updatedAt: Date;
-  fullName: string | null;
 }
 
 const userSchema = new Schema<IUser>(
@@ -21,8 +20,7 @@ const userSchema = new Schema<IUser>(
     password: { type: String, required: true },
     // eslint-disable-next-line no-bitwise
     emailToken: { type: String },
-    active: { type: Boolean, default: false },
-    fullName: { type: String }
+    active: { type: Boolean, default: false }
   },
   {
     timestamps: true

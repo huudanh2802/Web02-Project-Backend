@@ -88,8 +88,7 @@ export default class UserService {
       active: false,
       id: new Types.ObjectId(),
       createdAt: new Date(),
-      updatedAt: new Date(),
-      fullName: signup.fullName
+      updatedAt: new Date()
     };
 
     await this.userRepository.create(newUser);
@@ -106,8 +105,7 @@ export default class UserService {
         password: "!NULL",
         emailToken: null,
         active: true,
-        id: new Types.ObjectId(),
-        fullName: "Google Account"
+        id: new Types.ObjectId()
       };
 
       await this.userRepository.create(newUser);
