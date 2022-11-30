@@ -78,8 +78,8 @@ export default class UserService {
       emailToken,
       active: false,
       id: new Types.ObjectId(),
-      createdAt: null,
-      updatedAt: null
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     await this.userRepository.create(newUser);

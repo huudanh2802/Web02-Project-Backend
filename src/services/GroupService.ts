@@ -13,6 +13,9 @@ import { Types } from "mongoose";
 import mailer from "@src/utils/nodemailler";
 import { injectable } from "tsyringe";
 import { IGroup } from "@src/domains/models/Group";
+import ModifyGroupDTO from "@src/domains/dtos/ModifyGroupDTO";
+import { remove } from "fs-extra";
+import { removeItem } from "@src/declarations/functions";
 
 @injectable()
 export default class GroupService {
@@ -100,6 +103,8 @@ export default class GroupService {
       coowner: newGroupDTO.coowner.map((ng) => new Types.ObjectId(ng.id)),
       member: newGroupDTO.member.map((ng) => new Types.ObjectId(ng.id)),
       link: generateLink,
+      createdAt: new Date(),
+      updatedAt: new Date(),
       id: new Types.ObjectId()
     };
 
@@ -110,5 +115,61 @@ export default class GroupService {
     member.forEach((m) => {
       this.inviteMember(m.email, newGroup.link, newGroup.name);
     });
+  }
+
+  async getOwnGroup(id: Types.ObjectId) {
+    const result = await this.groupRepository.getOwnGroup(id);
+    return result;
+  }
+
+  async checkOwnGroup(ownerId: Types.ObjectId, groupId: Types.ObjectId) {
+    const result = await this.groupRepository.get(groupId);
+    return (
+      result.coowner.includes(ownerId.toString()) ||
+      result.owner.toString() === ownerId.toString()
+    );
+  }
+
+  async getMemberGroup(id: Types.ObjectId) {
+    const result = await this.groupRepository.getMemberGroup(id);
+    return result;
+  }
+
+  async get(id: Types.ObjectId) {
+    const group = await this.groupRepository.get(id);
+    const owner = await this.userRepository.get(group.owner);
+    const coowner = await this.userRepository.getMany(group.coowner);
+    const member = await this.userRepository.getMany(group.member);
+    return { group, owner, coowner, member };
+  }
+
+  async deleteMember(modifyGroup: ModifyGroupDTO) {
+    const group = await this.groupRepository.get(
+      new Types.ObjectId(modifyGroup.id)
+    );
+    // Co owner
+    if (modifyGroup.role === 1) {
+      removeItem(group.coowner, modifyGroup.memberId);
+    } else {
+      removeItem(group.member, modifyGroup.memberId);
+    }
+    await this.groupRepository.updateMember(group);
+    return group;
+  }
+
+  async modifyMember(modifyGroup: ModifyGroupDTO) {
+    const group = await this.groupRepository.get(
+      new Types.ObjectId(modifyGroup.id)
+    );
+    // Co owner
+    if (modifyGroup.role === 1) {
+      removeItem(group.coowner, modifyGroup.memberId);
+      group.member.push(modifyGroup.memberId);
+    } else {
+      removeItem(group.member, modifyGroup.memberId);
+      group.coowner.push(modifyGroup.memberId);
+    }
+    await this.groupRepository.updateMember(group);
+    return group;
   }
 }

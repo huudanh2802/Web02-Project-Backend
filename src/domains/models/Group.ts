@@ -2,7 +2,6 @@
 import { ModelName } from "@src/declarations/enums";
 import { Schema, Types } from "mongoose";
 import BaseModel, { IBase } from "./Base";
-import { IUser } from "./User";
 
 export interface IGroup extends IBase {
   name: string;
@@ -10,6 +9,8 @@ export interface IGroup extends IBase {
   coowner: Types.ObjectId[];
   member: Types.ObjectId[];
   link: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const groupSchema = new Schema<IGroup>(

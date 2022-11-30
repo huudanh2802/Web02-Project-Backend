@@ -80,7 +80,13 @@ export default class UserController {
   async getUser(_req: any, _res: IRes) {
     const { id } = _req.params;
     const result = await this.userService.getUser(id);
-    return _res.status(HttpStatusCodes.OK).send({email: result.email, date: result.createdAt.toJSON().slice(0,10).replace(/-/g,'/')}).end();
+    return _res
+      .status(HttpStatusCodes.OK)
+      .send({
+        email: result.email,
+        date: result.createdAt.toJSON().slice(0, 10).replace(/-/g, "/")
+      })
+      .end();
   }
 
   async getMemberSelection(req: any, res: IRes) {
