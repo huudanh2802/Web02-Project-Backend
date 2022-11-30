@@ -37,6 +37,10 @@ export default class UserController {
       "/signup",
       async (_req, res) => await this.signup(_req, res)
     );
+    this.router.post(
+      "/googleAuthen",
+      async (_req, res) => await this.googleAuthen(_req, res)
+    );
     this.router.get(
       "/verify/:emailToken",
       passport.authenticate("jwt", { session: false }),
@@ -96,7 +100,13 @@ export default class UserController {
 
     return _res
       .status(HttpStatusCodes.OK)
-      .json({ token, id: user.id, email: user.email, newAccount })
+      .json({
+        token,
+        id: user.id,
+        email: user.email,
+        fullname: user.fullname,
+        newAccount
+      })
       .end();
   }
 
