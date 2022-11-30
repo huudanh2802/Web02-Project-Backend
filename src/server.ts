@@ -13,7 +13,8 @@ import passport from "passport";
 import passportStrategy from "@src/utils/passport";
 
 import GroupController from "@src/controllers/GroupController";
-import UserController from "./controllers/UserController";
+import UserController from "@src/controllers/UserController";
+import IndexController from "./controllers/IndexController";
 
 // **** Init express **** //
 
@@ -47,7 +48,7 @@ passportStrategy(passport);
 // **** Add API routes **** //
 
 // Add Controllers
-
+app.use("/", container.resolve(IndexController).routes());
 app.use("/user", container.resolve(UserController).routes());
 app.use("/group", container.resolve(GroupController).routes());
 

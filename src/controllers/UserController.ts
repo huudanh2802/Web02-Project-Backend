@@ -12,6 +12,7 @@ import EnvVars from "@src/declarations/major/EnvVars";
 import SignupDTO from "@src/domains/dtos/SignUpDTO";
 import { GoogleDTO } from "@src/domains/dtos/GoogleDTO";
 import jwt from "jsonwebtoken";
+import passport from "passport";
 
 @autoInjectable()
 export default class UserController {
@@ -38,6 +39,7 @@ export default class UserController {
     );
     this.router.get(
       "/verify/:emailToken",
+      passport.authenticate("jwt", { session: false }),
       async (_req, res) => await this.activeAccount(_req, res)
     );
     this.router.get(
