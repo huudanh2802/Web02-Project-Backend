@@ -43,7 +43,6 @@ export default class UserController {
     );
     this.router.get(
       "/verify/:emailToken",
-      passport.authenticate("jwt", { session: false }),
       async (_req, res) => await this.activeAccount(_req, res)
     );
     this.router.get(
