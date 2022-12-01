@@ -59,7 +59,7 @@ export default class GroupService {
       subject: "Join kahot group",
       html: `<div style="background-color: #0fbbad; padding: 2em 2em;">
                       <h1 style="text-align: center;">You have been invited to join ${group.name} group as a member </h1>
-                      <h4 style="text-align: center;">Please click <a href="${EnvVars.clientHost}/group/autojoin/${group.id}>here</a> to join</h4>
+                      <h4 style="text-align: center;">Please click <a href="${EnvVars.clientHost}/group/autojoin/${group.id}">here</a> to join</h4>
                   </div>`
     };
 
