@@ -37,6 +37,7 @@ export default class UserRepository extends BaseRepository<UserModel, IUser> {
       { id: name.id },
       { fullname: name.updatedName }
     );
-    return result;
+    const newResult = await this.set.findOne({ id: name.id });
+    return newResult;
   }
 }

@@ -66,6 +66,7 @@ export default class UserController {
     const updateName = _req.body;
     // eslint-disable-next-line no-console
     const result = await this.userService.updateName(updateName);
+    // eslint-disable-next-line no-console
     return res
       .status(HttpStatusCodes.OK)
       .send({
