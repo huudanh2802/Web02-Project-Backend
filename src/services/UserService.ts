@@ -88,8 +88,7 @@ export default class UserService {
       active: false,
       id: new Types.ObjectId(),
       createdAt: new Date(),
-      updatedAt: new Date(),
-      fullName: signup.fullname
+      updatedAt: new Date()
     };
 
     await this.userRepository.create(newUser);
