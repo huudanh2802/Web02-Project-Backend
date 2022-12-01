@@ -21,7 +21,8 @@ export default class BaseRepository<T1 extends BaseModel, T2 extends IBase> {
   }
 
   async create(createModel: T2) {
-    await this.set.create(createModel);
+    const result = await this.set.create(createModel);
+    return result;
   }
 
   async getMany(ids: Types.ObjectId[]): Promise<T2[]> {

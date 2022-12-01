@@ -34,8 +34,8 @@ export default class UserRepository extends BaseRepository<UserModel, IUser> {
 
   async updateName(name: UpdateUserDTO) {
     const result = await this.set.findOneAndUpdate(
-      { _id: name.id },
-      { fullName: name.newName }
+      { id: name.id },
+      { fullname: name.updatedName }
     );
     return result;
   }

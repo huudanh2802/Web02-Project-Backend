@@ -71,7 +71,7 @@ export default class UserService {
       subject: "Email verification",
       html: `<div style="background-color: #0fbbad; padding: 2em 2em;">
                     <h1 style="text-align: center;">Thank you for registering on our web</h1>
-                    <h4 style="text-align: center;">Please click <a href="http://${EnvVars.clientHost}/confirm/${emailToken}">here</a> to activate your account</h4>
+                    <h4 style="text-align: center;">Please click <a href=${EnvVars.clientHost}/confirm/${emailToken}">here</a> to activate your account</h4>
                 </div>`
     };
 
@@ -89,7 +89,7 @@ export default class UserService {
       id: new Types.ObjectId(),
       createdAt: new Date(),
       updatedAt: new Date(),
-      fullName: signup.fullName
+      fullName: signup.fullname
     };
 
     await this.userRepository.create(newUser);

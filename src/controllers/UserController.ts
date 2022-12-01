@@ -43,20 +43,20 @@ export default class UserController {
     );
     this.router.get(
       "/verify/:emailToken",
-      passport.authenticate("jwt", { session: false }),
       async (_req, res) => await this.activeAccount(_req, res)
     );
     this.router.get(
       "/get/:id",
-      // passport.authenticate("jwt", { session: false }),
+      passport.authenticate("jwt", { session: false }),
       async (_req, res) => await this.getUser(_req, res)
     );
     this.router.get(
       "/memberselection/:id",
+      passport.authenticate("jwt", { session: false }),
       async (_req, res) => await this.getMemberSelection(_req, res)
     );
     this.router.put(
-      "/user",
+      "/update",
       async (_req, res) => await this.updateUser(_req, res)
     );
     return this.router;
@@ -65,9 +65,15 @@ export default class UserController {
   async updateUser(_req: any, res: IRes) {
     const updateName = _req.body;
     // eslint-disable-next-line no-console
-    const a = await this.userService.updateName(updateName);
-    console.log(a);
-    return res.status(HttpStatusCodes.OK).end();
+    const result = await this.userService.updateName(updateName);
+    return res
+      .status(HttpStatusCodes.OK)
+      .send({
+        email: result.email,
+        date: result.createdAt.toJSON().slice(0, 10).replace(/-/g, "/"),
+        fullname: result.fullname
+      })
+      .end();
   }
 
   getUsers(): Promise<IUser[]> {
@@ -125,7 +131,7 @@ export default class UserController {
       .send({
         email: result.email,
         date: result.createdAt.toJSON().slice(0, 10).replace(/-/g, "/"),
-        fullName: result.fullName
+        fullname: result.fullname
       })
       .end();
   }

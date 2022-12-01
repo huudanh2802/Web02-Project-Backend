@@ -31,14 +31,79 @@ export default class GroupService {
     this.userRepository = userRepository;
   }
 
-  private inviteMember(email: string, link: number, name: string) {
+  async inviteByEmail(email: string, groupId: Types.ObjectId) {
+    const group = await this.groupRepository.get(groupId);
+    const user = await this.userRepository.getByEmail(email);
+    if (!group) {
+      throw new RouteError(
+        HttpStatusCodes.BAD_REQUEST,
+        "Group cannot be found"
+      );
+    }
+    if (!user) {
+      throw new RouteError(HttpStatusCodes.BAD_REQUEST, "User cannot be found");
+    }
+    if (
+      group.coowner.includes(user.id) ||
+      group.member.includes(user.id) ||
+      group.owner === user.id
+    ) {
+      throw new RouteError(
+        HttpStatusCodes.BAD_REQUEST,
+        "Member already existed in group"
+      );
+    }
+    const mailOption = {
+      from: EnvVars.email.name,
+      to: email,
+      subject: "Join kahot group",
+      html: `<div style="background-color: #0fbbad; padding: 2em 2em;">
+                      <h1 style="text-align: center;">You have been invited to join ${group.name} group as a member </h1>
+                      <h4 style="text-align: center;">Please click <a href="${EnvVars.clientHost}/group/autojoin/${group.id}">here</a> to join</h4>
+                  </div>`
+    };
+
+    mailer.sendMail(mailOption, function (err, info) {
+      if (err) console.log(err);
+    });
+    return true;
+  }
+
+  async autojoin(userId: Types.ObjectId, groupId: Types.ObjectId) {
+    const group = await this.groupRepository.get(groupId);
+    const user = await this.userRepository.get(userId);
+    if (!group) {
+      throw new RouteError(
+        HttpStatusCodes.BAD_REQUEST,
+        "Group cannot be found"
+      );
+    }
+    if (!user) {
+      throw new RouteError(HttpStatusCodes.BAD_REQUEST, "User cannot be found");
+    }
+    if (
+      group.coowner.includes(userId) ||
+      group.member.includes(userId) ||
+      group.owner === userId
+    ) {
+      throw new RouteError(
+        HttpStatusCodes.BAD_REQUEST,
+        "Member already existed in group"
+      );
+    }
+    group.member.push(userId);
+    const result = await this.groupRepository.updateMember(group);
+    return result;
+  }
+
+  private inviteMember(email: string, id: string, name: string) {
     const mailOption = {
       from: EnvVars.email.name,
       to: email,
       subject: "Join kahot group",
       html: `<div style="background-color: #0fbbad; padding: 2em 2em;">
                       <h1 style="text-align: center;">You have been invited to join ${name} group as a member </h1>
-                      <h4 style="text-align: center;">Please click <a href="http://${EnvVars.host}/group/${link}">here</a> to join</h4>
+                      <h4 style="text-align: center;">Please click <a href="${EnvVars.clientHost}/group/detail/${id}">here</a> to join</h4>
                   </div>`
     };
 
@@ -47,14 +112,14 @@ export default class GroupService {
     });
   }
 
-  private inviteCoowner(email: string, link: number, name: string) {
+  private inviteCoowner(email: string, id: string, name: string) {
     const mailOption = {
       from: EnvVars.email.name,
       to: email,
       subject: "Join kahot group",
       html: `<div style="background-color: #0fbbad; padding: 2em 2em;">
                         <h1 style="text-align: center;">You have been invited to join ${name} group as a Co-owner </h1>
-                        <h4 style="text-align: center;">Please click <a href="http://${EnvVars.host}/group/${link}">here</a> to join</h4>
+                        <h4 style="text-align: center;">Please click <a href="${EnvVars.clientHost}/group/detail/${id}">here</a> to join</h4>
                     </div>`
     };
 
@@ -108,13 +173,14 @@ export default class GroupService {
       id: new Types.ObjectId()
     };
 
-    await this.groupRepository.create(newGroup);
+    const result = await this.groupRepository.create(newGroup);
     coowner.forEach((m) => {
-      this.inviteCoowner(m.email, newGroup.link, newGroup.name);
+      this.inviteCoowner(m.email, result.id, newGroup.name);
     });
     member.forEach((m) => {
-      this.inviteMember(m.email, newGroup.link, newGroup.name);
+      this.inviteMember(m.email, result.id, newGroup.name);
     });
+    return result;
   }
 
   async getOwnGroup(id: Types.ObjectId) {
@@ -154,7 +220,10 @@ export default class GroupService {
       removeItem(group.member, modifyGroup.memberId);
     }
     await this.groupRepository.updateMember(group);
-    return group;
+    const owner = await this.userRepository.get(group.owner);
+    const coowner = await this.userRepository.getMany(group.coowner);
+    const member = await this.userRepository.getMany(group.member);
+    return { group, owner, coowner, member };
   }
 
   async modifyMember(modifyGroup: ModifyGroupDTO) {
@@ -170,6 +239,9 @@ export default class GroupService {
       group.coowner.push(modifyGroup.memberId);
     }
     await this.groupRepository.updateMember(group);
-    return group;
+    const owner = await this.userRepository.get(group.owner);
+    const coowner = await this.userRepository.getMany(group.coowner);
+    const member = await this.userRepository.getMany(group.member);
+    return { group, owner, coowner, member };
   }
 }
