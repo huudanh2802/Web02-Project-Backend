@@ -106,8 +106,7 @@ export default class UserService {
         password: "!NULL",
         emailToken: null,
         active: true,
-        id: new Types.ObjectId(),
-        fullName: "Google Account"
+        id: new Types.ObjectId()
       };
 
       await this.userRepository.create(newUser);
