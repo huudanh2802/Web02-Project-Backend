@@ -106,14 +106,17 @@ export default class GroupController {
       name: group.name,
       owner: {
         id: owner.id,
+        fullname: owner.fullname,
         email: owner.email
       },
       coowner: coowner.map((m) => ({
         id: m.id.toString(),
+        fullname: m.fullname,
         email: m.email
       })),
       member: member.map((m) => ({
         id: m.id.toString(),
+        fullname: m.fullname,
         email: m.email
       }))
     };
@@ -129,14 +132,17 @@ export default class GroupController {
       name: group.name,
       owner: {
         id: owner.id,
+        fullname: owner.fullname,
         email: owner.email
       },
       coowner: coowner.map((m) => ({
         id: m.id.toString(),
+        fullname: m.fullname,
         email: m.email
       })),
       member: member.map((m) => ({
         id: m.id.toString(),
+        fullname: m.fullname,
         email: m.email
       }))
     };
@@ -152,14 +158,17 @@ export default class GroupController {
       name: group.name,
       owner: {
         id: owner.id,
+        fullname: owner.fullname,
         email: owner.email
       },
       coowner: coowner.map((m) => ({
         id: m.id.toString(),
+        fullname: m.fullname,
         email: m.email
       })),
       member: member.map((m) => ({
         id: m.id.toString(),
+        fullname: m.fullname,
         email: m.email
       }))
     };
