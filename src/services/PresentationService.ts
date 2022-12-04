@@ -1,4 +1,6 @@
-import NewPresentationDTO from "@src/domains/dtos/NewPresentationDTO";
+import RouteError from "@src/declarations/classes";
+import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
+import PresentationDTO from "@src/domains/dtos/PresentationDTO";
 import { IPresentation } from "@src/domains/models/Presentation";
 import PresentationRepository from "@src/repos/PresentationRepository";
 import { Types } from "mongoose";
@@ -12,7 +14,7 @@ export default class PresentationService {
     this.presentationRepository = presentationRepository;
   }
 
-  async newPresentation(newPresentationDTO: NewPresentationDTO) {
+  async newPresentation(newPresentationDTO: PresentationDTO) {
     const newPresentation: IPresentation = {
       name: newPresentationDTO.name,
       groupId: new Types.ObjectId(newPresentationDTO.groupId),
@@ -28,5 +30,37 @@ export default class PresentationService {
     };
     await this.presentationRepository.create(newPresentation);
     return newPresentation.id;
+  }
+
+  async updatePresentation(
+    presentationDTO: PresentationDTO,
+    presentationId: Types.ObjectId
+  ) {
+    const updatePresentation: IPresentation = {
+      name: presentationDTO.name,
+      groupId: new Types.ObjectId(presentationDTO.groupId),
+      slides: presentationDTO.slides.map((s) => ({
+        question: s.question,
+        correct: s.correct,
+        answers: s.answers.map((a) => ({
+          id: a.id,
+          answer: a.answer
+        }))
+      })),
+      id: presentationId
+    };
+    await this.presentationRepository.update(updatePresentation);
+    return presentationId;
+  }
+
+  async getPresentation(id: Types.ObjectId) {
+    const result = await this.presentationRepository.get(id);
+    if (!result) {
+      throw new RouteError(
+        HttpStatusCodes.BAD_REQUEST,
+        "Presentation don't exist"
+      );
+    }
+    return result;
   }
 }

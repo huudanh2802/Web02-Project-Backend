@@ -25,6 +25,16 @@ export default class BaseRepository<T1 extends BaseModel, T2 extends IBase> {
     return result;
   }
 
+  async update(createModel: T2) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...updateModel } = createModel;
+    const result = await this.set.findByIdAndUpdate(
+      createModel.id,
+      updateModel
+    );
+    return result;
+  }
+
   async getMany(ids: Types.ObjectId[]): Promise<T2[]> {
     const result = await this.set.find({
       _id: {

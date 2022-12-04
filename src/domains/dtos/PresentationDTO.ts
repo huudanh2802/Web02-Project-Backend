@@ -11,7 +11,7 @@ export interface SlideDTO {
   answers: AnswerDTO[];
 }
 
-export default interface NewPresentationDTO {
+export default interface PresentationDTO {
   name: string;
   groupId: string;
   slides: SlideDTO[];

@@ -57,6 +57,7 @@ export default class UserController {
     );
     this.router.put(
       "/update",
+      passport.authenticate("jwt", { session: false }),
       async (_req, res) => await this.updateUser(_req, res)
     );
     return this.router;
