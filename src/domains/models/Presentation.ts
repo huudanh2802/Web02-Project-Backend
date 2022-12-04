@@ -2,15 +2,14 @@ import { ModelName } from "@src/declarations/enums";
 import { Schema, Types } from "mongoose";
 import BaseModel, { IBase } from "./Base";
 
+export interface IAnswer {
+  id: string;
+  answer: string;
+}
 export interface ISlide {
   question: string;
   correct: string;
-  answers: [
-    {
-      id: string;
-      answer: string;
-    }
-  ];
+  answers: IAnswer[];
 }
 export interface IPresentation extends IBase {
   name: string;
