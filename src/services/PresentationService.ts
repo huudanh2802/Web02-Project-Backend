@@ -26,6 +26,7 @@ export default class PresentationService {
           answer: a.answer
         }))
       })),
+      createdAt: new Date(),
       id: new Types.ObjectId()
     };
     await this.presentationRepository.create(newPresentation);
@@ -36,6 +37,7 @@ export default class PresentationService {
     presentationDTO: PresentationDTO,
     presentationId: Types.ObjectId
   ) {
+    const oPresent = await this.presentationRepository.get(presentationId);
     const updatePresentation: IPresentation = {
       name: presentationDTO.name,
       groupId: new Types.ObjectId(presentationDTO.groupId),
@@ -47,10 +49,16 @@ export default class PresentationService {
           answer: a.answer
         }))
       })),
+      createdAt: oPresent.createdAt,
       id: presentationId
     };
     await this.presentationRepository.update(updatePresentation);
     return presentationId;
+  }
+
+  async groupGet(groupId: Types.ObjectId) {
+    const result = await this.presentationRepository.groupGet(groupId);
+    return result;
   }
 
   async getPresentation(id: Types.ObjectId) {

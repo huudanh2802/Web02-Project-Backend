@@ -37,7 +37,30 @@ export default class PresentationController {
       passport.authenticate("jwt", { session: false }),
       async (_req, res) => await this.updatePresentation(_req, res)
     );
+    this.router.get(
+      "/groupget/:id",
+      passport.authenticate("jwt", { session: false }),
+
+      async (_req, res) => await this.groupGet(_req, res)
+    );
     return this.router;
+  }
+
+  async groupGet(_req: any, res: IRes) {
+    const groupId = _req.params;
+    const result = await this.presentationService.groupGet(
+      new Types.ObjectId(groupId)
+    );
+    return res
+      .status(HttpStatusCodes.OK)
+      .send(
+        result.map((g) => ({
+          id: g.id,
+          name: g.name,
+          createdAt: g.createdAt
+        }))
+      )
+      .end();
   }
 
   async newPresentation(_req: any, res: IRes) {

@@ -15,6 +15,7 @@ export interface IPresentation extends IBase {
   name: string;
   groupId: Types.ObjectId;
   slides: ISlide[];
+  createdAt: Date;
 }
 
 const presentationSchema = new Schema<IPresentation>(
