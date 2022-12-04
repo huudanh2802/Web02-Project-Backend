@@ -4,9 +4,10 @@ import BaseModel, { IBase } from "./Base";
 
 export interface ISlide {
   question: string;
+  correct: string;
   answers: [
     {
-      idx: number;
+      id: string;
       answer: string;
     }
   ];
