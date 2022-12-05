@@ -11,5 +11,6 @@ export enum NodeEnvs {
 export enum ModelName {
   UserModel = "user",
   GroupModel = "group",
-  PresentationModel = "presentation"
+  PresentationModel = "presentation",
+  RealtimeModel = "realtime"
 }
