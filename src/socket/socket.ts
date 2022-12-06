@@ -22,13 +22,13 @@ const socketServer = (app: Express) => {
   io.on("connection", (socket) => {
     console.log(`--[SOCKET/CONNECT] User connected ${socket.id}\n`);
 
-    // Game handling
+    // Game state handling ##########################################
     socket.on("create_game", (data: { game: string; presentation: string }) => {
       const { game, presentation } = data;
       socket.join(game);
 
       // Add the new game to list
-      games.push({ game, presentation, users: [] });
+      games.push({ game, presentation, users: [], locked: false });
       console.log(`--[SOCKET/GAME]\n${JSON.stringify(games)}\n`);
 
       console.log(`--[SOCKET/CREATE] Game ${game} has been initiated\n`);
@@ -38,8 +38,15 @@ const socketServer = (app: Express) => {
       const { game } = data;
 
       socket.to(game).emit("start_game");
-
-      console.log(`--[SOCKET/CREATE] Game ${game} has started\n`);
+      const targetGame = games.find((g) => g.game === game);
+      if (targetGame) {
+        targetGame.locked = true;
+        console.log(`--[SOCKET/CREATE] Game ${game} has started\n`);
+      } else {
+        console.log(
+          `--[SOCKET/CREATE] Can't start non-existent game ${game}\n`
+        );
+      }
     });
 
     socket.on("end_game", (data: { game: string }) => {
@@ -55,7 +62,22 @@ const socketServer = (app: Express) => {
       console.log(`--[SOCKET/END]\n${JSON.stringify(games)}\n`);
     });
 
-    // Add user to game
+    // In-game handling #############################################
+    socket.on(
+      "submit_answer",
+      (data: { question: number; id: string; game: string }) => {
+        const { question, id, game } = data;
+        const targetGame = games.find((g) => g.game === game);
+        if (targetGame) {
+          socket.to(game).emit("submit_answer", { id });
+          console.log(
+            `--[SOCKET/SUBMIT] ${socket.id}'s answer for Question ${question} is ${id}\n`
+          );
+        }
+      }
+    );
+
+    // User handling ################################################
     socket.on("join_game", (data: { username: string; game: string }) => {
       const { username, game } = data;
       socket.join(game);
@@ -63,7 +85,7 @@ const socketServer = (app: Express) => {
       // Save new user to game
       const targetGame = games.find((g) => g.game === game);
       let success = true;
-      if (targetGame) {
+      if (targetGame && targetGame.locked === false) {
         targetGame.users.push({ id: socket.id, username, game });
         allUsers.push({ id: socket.id, username, game });
         const targetGameUsers = allUsers.filter((user) => user.game === game);
@@ -83,16 +105,23 @@ const socketServer = (app: Express) => {
         );
         console.log(`--[SOCKET/JOIN] All Users\n${JSON.stringify(allUsers)}\n`);
       } else {
+        let message = "Game has already started";
         success = false;
-        socket.emit("join_game_result", { success, game });
+        if (targetGame && targetGame.locked === true) {
+          console.log(
+            `--[SOCKET/JOIN] ${username} tried to join non-existent game ${game}\n`
+          );
+        } else {
+          message = "Game not found";
+          console.log(
+            `--[SOCKET/JOIN] ${username} tried to join locked game ${game}\n`
+          );
+        }
+        socket.emit("join_game_result", { success, game, message });
         socket.leave(game);
-        console.log(
-          `--[SOCKET/JOIN] ${username} tried to join non-existent game ${game}\n`
-        );
       }
     });
 
-    // User leaves game
     socket.on("leave_game", (data) => {
       const { username, game } = data;
       socket.leave(game);
@@ -115,7 +144,6 @@ const socketServer = (app: Express) => {
       console.log(`--[SOCKET/LEAVE] All Users\n${JSON.stringify(allUsers)}\n`);
     });
 
-    // User disconnects
     socket.on("disconnect", () => {
       const user = allUsers.find((u) => u.id === socket.id);
       if (user?.username) {

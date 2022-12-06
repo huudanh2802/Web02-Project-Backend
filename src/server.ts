@@ -17,6 +17,7 @@ import GroupController from "@src/controllers/GroupController";
 import UserController from "@src/controllers/UserController";
 import IndexController from "./controllers/IndexController";
 import PresentationController from "./controllers/PresentationController";
+import GameController from "./controllers/GameController";
 
 // **** Init express **** //
 
@@ -54,6 +55,7 @@ app.use("/", container.resolve(IndexController).routes());
 app.use("/user", container.resolve(UserController).routes());
 app.use("/group", container.resolve(GroupController).routes());
 app.use("/presentation", container.resolve(PresentationController).routes());
+app.use("/game", container.resolve(GameController).routes());
 // Setup error handler
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: Error, _: Request, res: Response, next: NextFunction) => {
