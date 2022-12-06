@@ -11,8 +11,7 @@ import { NodeEnvs } from "@src/declarations/enums";
 import RouteError from "@src/declarations/classes";
 import passport from "passport";
 import passportStrategy from "@src/utils/passport";
-import http from "http";
-import { Server } from "socket.io";
+import socketServer from "@src/socket/socket";
 
 import GroupController from "@src/controllers/GroupController";
 import UserController from "@src/controllers/UserController";
@@ -65,46 +64,7 @@ app.use((err: Error, _: Request, res: Response, next: NextFunction) => {
   return res.status(status).json({ error: err.message });
 });
 
-// Realtime
-const server = http.createServer(app);
-
-const targetPresentation = "";
-const allUsers: any[] = [];
-
-const io = new Server(server, {
-  cors: {
-    origin: EnvVars.clientHost,
-    methods: ["GET", "POST"]
-  }
-});
-io.on("connection", (socket) => {
-  console.log(`User connected ${socket.id}`);
-
-  // Add user to presentation
-  socket.on("join_room", (data) => {
-    const { username, presentation } = data;
-    socket.join(presentation);
-
-    // Send message to all users
-    socket.to(presentation).emit("receive_message", {
-      message: `${username} has joined the presentation`,
-      username: "BOT"
-    });
-
-    // Send message to new user
-    socket.emit("receive_message", {
-      message: `Welcome ${username}`,
-      username: "BOT"
-    });
-
-    // // Save new user to presentation
-    // targetPresentation = presentation;
-    // allUsers.push({ id: socket.id, username, presentation });
-    // let targetPresentationUsers = allUsers.filter((user) => user.presentation === presentation);
-    // socket.to(presentation).emit("targetPresentation_users", targetPresentationUsers);
-    // socket.emit("targetPresentation_users", targetPresentationUsers);
-  });
-});
+const server = socketServer(app);
 
 // **** Export default **** //
 
