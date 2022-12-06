@@ -34,6 +34,14 @@ const socketServer = (app: Express) => {
       console.log(`--[SOCKET/CREATE] Game ${game} has been initiated\n`);
     });
 
+    socket.on("start_game", (data: { game: string }) => {
+      const { game } = data;
+
+      socket.to(game).emit("start_game");
+
+      console.log(`--[SOCKET/CREATE] Game ${game} has started\n`);
+    });
+
     socket.on("end_game", (data: { game: string }) => {
       const { game } = data;
       const targetGame = games.find((g) => g.game === game);
@@ -79,7 +87,7 @@ const socketServer = (app: Express) => {
         socket.emit("join_game_result", { success, game });
         socket.leave(game);
         console.log(
-          `[SOKCET/JOIN] ${username} tried to join non-existent game ${game}\n`
+          `--[SOCKET/JOIN] ${username} tried to join non-existent game ${game}\n`
         );
       }
     });
