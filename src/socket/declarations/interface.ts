@@ -6,5 +6,6 @@ export interface User {
 
 export interface Game {
   game: string;
+  presentation: string;
   users: User[];
 }

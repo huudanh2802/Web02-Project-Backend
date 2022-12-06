@@ -23,12 +23,12 @@ const socketServer = (app: Express) => {
     console.log(`--[SOCKET/CONNECT] User connected ${socket.id}\n`);
 
     // Game handling
-    socket.on("create_game", (data: { game: string }) => {
-      const { game } = data;
+    socket.on("create_game", (data: { game: string; presentation: string }) => {
+      const { game, presentation } = data;
       socket.join(game);
 
       // Add the new game to list
-      games.push({ game, users: [] });
+      games.push({ game, presentation, users: [] });
       console.log(`--[SOCKET/GAME]\n${JSON.stringify(games)}\n`);
 
       console.log(`--[SOCKET/CREATE] Game ${game} has been initiated\n`);
@@ -62,7 +62,11 @@ const socketServer = (app: Express) => {
         socket.to(game).emit(`${game}_users`, { users: targetGameUsers });
         socket.emit(`${game}_users`, { users: targetGameUsers });
 
-        socket.emit("join_game_result", { success, game: targetGame.game });
+        socket.emit("join_game_result", {
+          success,
+          game: targetGame.game,
+          presentation: targetGame.presentation
+        });
         console.log(`--[SOCKET/JOIN] ${username} has joined the game\n`);
         console.log(
           `--[SOCKET/JOIN] Game ${targetGame.game}\n${JSON.stringify(
