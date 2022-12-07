@@ -29,8 +29,8 @@ export default class PresentationService {
       createdAt: new Date(),
       id: new Types.ObjectId()
     };
-    await this.presentationRepository.create(newPresentation);
-    return newPresentation.id;
+    const result = await this.presentationRepository.create(newPresentation);
+    return result.id;
   }
 
   async updatePresentation(
@@ -70,5 +70,14 @@ export default class PresentationService {
       );
     }
     return result;
+  }
+
+  async deletePresentation(id: Types.ObjectId) {
+    const presentation = await this.presentationRepository.get(id);
+    await this.presentationRepository.delete(id);
+    const newGroup = await this.presentationRepository.groupGet(
+      presentation.groupId
+    );
+    return newGroup;
   }
 }
