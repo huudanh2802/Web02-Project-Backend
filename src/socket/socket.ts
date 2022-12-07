@@ -63,6 +63,19 @@ const socketServer = (app: Express) => {
       console.log(`--[SOCKET/END]\n${JSON.stringify(games)}\n`);
     });
 
+    socket.on("finish_game", (data: { game: string }) => {
+      const { game } = data;
+      const targetGame = games.find((g) => g.game === game);
+      if (targetGame) {
+        games = games.filter((g: Game) => g.game !== game);
+        socket.to(targetGame.game).emit("finish_game");
+        console.log(`--[SOCKET/FINISH] Game ${targetGame.game} ended\n`);
+      }
+
+      socket.leave(game);
+      console.log(`--[SOCKET/FINISH]\n${JSON.stringify(games)}\n`);
+    });
+
     // In-game handling #############################################
     socket.on(
       "submit_answer",
@@ -90,6 +103,15 @@ const socketServer = (app: Express) => {
             slide.correct
           }\n`
         );
+      }
+    });
+
+    socket.on("next_question", (data: { game: string; slide: SlideDTO }) => {
+      const { game, slide } = data;
+      const targetGame = games.find((g) => g.game === game);
+      if (targetGame) {
+        socket.to(game).emit("next_question");
+        console.log(`--[SOCKET/NEXT] Continued to Question ${slide.idx + 1}\n`);
       }
     });
 
