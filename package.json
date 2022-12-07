@@ -23,7 +23,7 @@
     "@src": "dist"
   },
   "engines": {
-    "node": "14.x"
+    "node": ">=8.10.0"
   },
   "dependencies": {
     "@automapper/core": "^8.7.7",
