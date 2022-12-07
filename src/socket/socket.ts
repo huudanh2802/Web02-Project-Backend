@@ -5,6 +5,7 @@ import { Server } from "socket.io";
 import leaveGame from "@src/socket/utils/leavegame";
 
 import { User, Game } from "@src/socket/declarations/interface";
+import { SlideDTO } from "@src/domains/dtos/PresentationDTO";
 
 const socketServer = (app: Express) => {
   // Realtime
@@ -71,11 +72,26 @@ const socketServer = (app: Express) => {
         if (targetGame) {
           socket.to(game).emit("submit_answer", { id });
           console.log(
-            `--[SOCKET/SUBMIT] ${socket.id}'s answer for Question ${question} is ${id}\n`
+            `--[SOCKET/SUBMIT] ${socket.id}'s answer for Question ${
+              question + 1
+            } is ${id}\n`
           );
         }
       }
     );
+
+    socket.on("show_answer", (data: { game: string; slide: SlideDTO }) => {
+      const { game, slide } = data;
+      const targetGame = games.find((g) => g.game === game);
+      if (targetGame) {
+        socket.to(game).emit("show_answer");
+        console.log(
+          `--[SOCKET/SHOW] Correct answer for Question ${slide.idx + 1} is ${
+            slide.correct
+          }\n`
+        );
+      }
+    });
 
     // User handling ################################################
     socket.on("join_game", (data: { username: string; game: string }) => {
