@@ -88,7 +88,12 @@ export default class UserController {
 
     return _res
       .status(HttpStatusCodes.OK)
-      .json({ token, id: account.id, email: account.email })
+      .json({
+        token,
+        id: account.id,
+        email: account.email,
+        fullname: account.fullname
+      })
       .end();
   }
 
