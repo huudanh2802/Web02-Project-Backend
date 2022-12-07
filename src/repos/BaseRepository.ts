@@ -43,4 +43,9 @@ export default class BaseRepository<T1 extends BaseModel, T2 extends IBase> {
     });
     return result;
   }
+
+  async delete(id: Types.ObjectId) {
+    const result = await this.set.deleteOne({ id });
+    return result;
+  }
 }

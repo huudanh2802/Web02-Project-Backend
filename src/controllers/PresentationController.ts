@@ -43,7 +43,29 @@ export default class PresentationController {
 
       async (_req, res) => await this.groupGet(_req, res)
     );
+    this.router.delete(
+      "/:id",
+      passport.authenticate("jwt", { session: false }),
+      async (_req, res) => await this.deletePresentation(_req, res)
+    );
     return this.router;
+  }
+
+  async deletePresentation(_req: any, res: IRes) {
+    const id = _req.params;
+    const result = await this.presentationService.deletePresentation(
+      new Types.ObjectId(id)
+    );
+    return res
+      .status(HttpStatusCodes.OK)
+      .send(
+        result.map((g) => ({
+          id: g.id,
+          name: g.name,
+          createdAt: g.createdAt
+        }))
+      )
+      .end();
   }
 
   async groupGet(_req: any, res: IRes) {
