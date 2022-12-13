@@ -45,7 +45,7 @@ export default class BaseRepository<T1 extends BaseModel, T2 extends IBase> {
   }
 
   async delete(id: Types.ObjectId) {
-    const result = await this.set.deleteOne({ id });
+    const result = await this.set.findByIdAndRemove(id);
     return result;
   }
 }

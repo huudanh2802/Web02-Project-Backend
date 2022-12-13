@@ -118,7 +118,7 @@ export default class PresentationController {
         answers: s.answers.map((a: IAnswer) => ({
           id: a.id,
           answer: a.answer,
-          placeHolder: `Option ${a.id}`
+          placeHolder: `${a.id}.`
         }))
       }))
     };

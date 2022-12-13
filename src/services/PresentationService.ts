@@ -74,10 +74,10 @@ export default class PresentationService {
 
   async deletePresentation(id: Types.ObjectId) {
     const presentation = await this.presentationRepository.get(id);
-    await this.presentationRepository.delete(id);
     const newGroup = await this.presentationRepository.groupGet(
       presentation.groupId
     );
+    await this.presentationRepository.delete(id);
     return newGroup;
   }
 }
