@@ -11,18 +11,37 @@ export interface ISlide {
   correct: string;
   answers: IAnswer[];
 }
+
+export interface IChat {
+  user: string;
+  chat: string;
+  createdAt: Date;
+}
+
+export interface IQuestion {
+  user: string;
+  question: string;
+  createdAt: Date;
+  upvote: number;
+  answer: string;
+  checkAnswer: boolean;
+}
 export interface IPresentation extends IBase {
   name: string;
   groupId: Types.ObjectId;
   slides: ISlide[];
   createdAt: Date;
+  chatHistory?: IChat[];
+  questionList?: IQuestion[];
 }
 
 const presentationSchema = new Schema<IPresentation>(
   {
     name: { type: String, required: true },
     groupId: { type: Schema.Types.ObjectId, required: true },
-    slides: { type: Schema.Types.Mixed, required: true }
+    slides: { type: Schema.Types.Mixed, required: true },
+    chatHistory: { type: Schema.Types.Mixed, required: false },
+    questionList: { type: Schema.Types.Mixed, required: false }
   },
   {
     timestamps: true
