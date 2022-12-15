@@ -115,6 +115,19 @@ const socketServer = (app: Express) => {
       }
     });
 
+    // Chat handling ################################################
+    socket.on(
+      "send_chat_msg",
+      (data: { username: string; chat: string; date: Date; game: string }) => {
+        const { username, chat, date, game } = data;
+        const targetGame = games.find((g) => g.game === game);
+        if (targetGame) {
+          socket.to(game).emit("receive_chat_msg", { username, chat, date });
+          console.log(`--[SOCKET/CHAT/${game}] ${username}: ${chat}`);
+        }
+      }
+    );
+
     // User handling ################################################
     socket.on("join_game", (data: { username: string; game: string }) => {
       const { username, game } = data;
