@@ -12,5 +12,6 @@ export enum ModelName {
   UserModel = "user",
   GroupModel = "group",
   PresentationModel = "presentation",
-  RealtimeModel = "realtime"
+  RealtimeModel = "realtime",
+  GameModel = "game"
 }

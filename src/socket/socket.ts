@@ -1,6 +1,8 @@
 import { Express } from "express";
 import EnvVars from "@src/declarations/major/EnvVars";
 import http from "http";
+import GameService from "@src/services/GameService";
+import GameRepository from "@src/repos/GameRepository";
 import { Server } from "socket.io";
 import leaveGame from "@src/socket/utils/leavegame";
 
@@ -14,6 +16,8 @@ const socketServer = (app: Express) => {
   let games: Game[] = [];
   let allUsers: User[] = [];
 
+  const gameRepository: GameRepository = new GameRepository();
+  const gameService: GameService = new GameService(gameRepository);
   const io = new Server(server, {
     cors: {
       origin: EnvVars.clientHost,
@@ -56,6 +60,7 @@ const socketServer = (app: Express) => {
       if (targetGame) {
         games = games.filter((g: Game) => g.game !== game);
         socket.to(targetGame.game).emit("end_game");
+        gameService.endGame(game);
         console.log(`--[SOCKET/END] Host has ended game ${targetGame.game}\n`);
       }
 
@@ -69,6 +74,7 @@ const socketServer = (app: Express) => {
       if (targetGame) {
         games = games.filter((g: Game) => g.game !== game);
         socket.to(targetGame.game).emit("finish_game");
+        gameService.endGame(game);
         console.log(`--[SOCKET/FINISH] Game ${targetGame.game} ended\n`);
       }
 
@@ -114,6 +120,33 @@ const socketServer = (app: Express) => {
         console.log(`--[SOCKET/NEXT] Continued to Question ${slide.idx + 1}\n`);
       }
     });
+
+    // Chat handling ################################################
+    socket.on(
+      "send_chat_msg",
+      (data: {
+        username: string;
+        chat: string;
+        date: Date;
+        role: number;
+        game: string;
+      }) => {
+        const { username, chat, date, role, game } = data;
+        const targetGame = games.find((g) => g.game === game);
+        if (targetGame) {
+          socket
+            .to(game)
+            .emit("receive_chat_msg", { username, chat, role, date });
+          gameService.updateChat(game, {
+            username,
+            chat,
+            role,
+            createdAt: date
+          });
+          console.log(`--[SOCKET/CHAT/${game}] ${username}: ${chat}`);
+        }
+      }
+    );
 
     // User handling ################################################
     socket.on("join_game", (data: { username: string; game: string }) => {
