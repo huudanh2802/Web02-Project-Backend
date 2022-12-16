@@ -4,7 +4,11 @@ import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
 import GameService from "@src/services/GameService";
 import PresentationService from "@src/services/PresentationService";
 import { IRes } from "@src/domains/entities/types";
-import { IAnswer, ISlide } from "@src/domains/models/Presentation";
+import {
+  IAnswer,
+  IMutipleChoice,
+  ISlide
+} from "@src/domains/models/Presentation";
 import { Router } from "express";
 import { autoInjectable } from "tsyringe";
 import passport from "passport";
@@ -45,7 +49,7 @@ export default class GameController {
     const presentationDTO: PresentationDTO = {
       name: result.name,
       groupId: result.groupId,
-      slides: result.slides.map((s: ISlide, idx: number) => ({
+      slides: result.slides.map((s: IMutipleChoice, idx: number) => ({
         idx,
         question: s.question,
         correct: s.correct,

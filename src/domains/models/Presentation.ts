@@ -6,18 +6,30 @@ export interface IAnswer {
   id: string;
   answer: string;
 }
-export interface ISlide {
+export type ISlide = {
+  // 1: MutipleChoice
+  // 2: Heading
+  // 3: Paragraph
+  type: number;
+};
+
+export type IMutipleChoice = ISlide & {
+  type: 1;
   question: string;
   correct: string;
   answers: IAnswer[];
-}
+};
 
-export interface IChat {
-  user: string;
-  chat: string;
-  createdAt: Date;
-}
+export type IHeading = ISlide & {
+  type: 2;
+  heading: string;
+};
 
+export type IParagraph = ISlide & {
+  type: 3;
+  heading: string;
+  paragraph: string;
+};
 export interface IQuestion {
   user: string;
   question: string;
@@ -31,7 +43,6 @@ export interface IPresentation extends IBase {
   groupId: Types.ObjectId;
   slides: ISlide[];
   createdAt: Date;
-  chatHistory?: IChat[];
   questionList?: IQuestion[];
 }
 
@@ -40,7 +51,6 @@ const presentationSchema = new Schema<IPresentation>(
     name: { type: String, required: true },
     groupId: { type: Schema.Types.ObjectId, required: true },
     slides: { type: Schema.Types.Mixed, required: true },
-    chatHistory: { type: Schema.Types.Mixed, required: false },
     questionList: { type: Schema.Types.Mixed, required: false }
   },
   {
