@@ -42,6 +42,6 @@ export type ParagraphDTO = SlideDTOV2 & {
 export type Slide = MutipleChoiceDTO | HeadingDTO | ParagraphDTO;
 export interface PresentationDTOV2 {
   name: string;
-  groupId: string;
+  creator: string;
   slides: Slide[];
 }

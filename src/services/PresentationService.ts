@@ -31,7 +31,7 @@ export default class PresentationService {
   async newPresentation(newPresentationDTO: PresentationDTOV2) {
     const newPresentation: IPresentation = {
       name: newPresentationDTO.name,
-      groupId: new Types.ObjectId(newPresentationDTO.groupId),
+      creator: new Types.ObjectId(newPresentationDTO.creator),
       slides: newPresentationDTO.slides.map((slide: Slide) => {
         switch (slide.type) {
           case 1: {
@@ -86,7 +86,7 @@ export default class PresentationService {
     const oPresent = await this.presentationRepository.get(presentationId);
     const updatePresentation: IPresentation = {
       name: presentationDTO.name,
-      groupId: new Types.ObjectId(presentationDTO.groupId),
+      creator: new Types.ObjectId(presentationDTO.creator),
       slides: presentationDTO.slides.map((slide: Slide) => {
         switch (slide.type) {
           case 1: {
@@ -134,8 +134,13 @@ export default class PresentationService {
     return presentationId;
   }
 
-  async groupGet(groupId: Types.ObjectId) {
-    const result = await this.presentationRepository.groupGet(groupId);
+  async creatorGet(userId: Types.ObjectId) {
+    const result = await this.presentationRepository.creatorGet(userId);
+    return result;
+  }
+
+  async collabsGet(userId: Types.ObjectId) {
+    const result = await this.presentationRepository.collabsGet(userId);
     return result;
   }
 
@@ -152,10 +157,13 @@ export default class PresentationService {
 
   async deletePresentation(id: Types.ObjectId) {
     const presentation = await this.presentationRepository.get(id);
-    const newGroup = await this.presentationRepository.groupGet(
-      presentation.groupId
-    );
     await this.presentationRepository.delete(id);
-    return newGroup;
+    const creator = await this.presentationRepository.creatorGet(
+      presentation.creator
+    );
+    const collabs = await this.presentationRepository.collabsGet(
+      presentation.creator
+    );
+    return [...creator, ...collabs];
   }
 }

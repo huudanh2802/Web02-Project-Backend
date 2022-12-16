@@ -40,7 +40,8 @@ export interface IQuestion {
 }
 export interface IPresentation extends IBase {
   name: string;
-  groupId: Types.ObjectId;
+  creator: Types.ObjectId;
+  collabs?: Types.ObjectId[];
   slides: ISlide[];
   createdAt: Date;
   questionList?: IQuestion[];
@@ -49,7 +50,8 @@ export interface IPresentation extends IBase {
 const presentationSchema = new Schema<IPresentation>(
   {
     name: { type: String, required: true },
-    groupId: { type: Schema.Types.ObjectId, required: true },
+    creator: { type: Schema.Types.ObjectId, required: true },
+    collabs: { type: [Schema.Types.ObjectId], required: false },
     slides: { type: Schema.Types.Mixed, required: true },
     questionList: { type: Schema.Types.Mixed, required: false }
   },

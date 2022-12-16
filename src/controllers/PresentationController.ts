@@ -8,6 +8,7 @@ import PresentationDTO, {
   ParagraphDTO,
   PresentationDTOV2
 } from "@src/domains/dtos/PresentationDTO";
+import ViewPresentationDTO from "@src/domains/dtos/ViewPresentationDTO";
 import { IRes } from "@src/domains/entities/types";
 import {
   IAnswer,
@@ -50,10 +51,10 @@ export default class PresentationController {
       async (_req, res) => await this.updatePresentation(_req, res)
     );
     this.router.get(
-      "/groupget/:id",
+      "/getview/:id",
       passport.authenticate("jwt", { session: false }),
 
-      async (_req, res) => await this.groupGet(_req, res)
+      async (_req, res) => await this.getViewPresentation(_req, res)
     );
     this.router.delete(
       "/:id",
@@ -74,26 +75,40 @@ export default class PresentationController {
         result.map((g) => ({
           id: g.id,
           name: g.name,
-          createdAt: g.createdAt
+          createdAt: g.createdAt,
+          collabs: g.collabs
         }))
       )
       .end();
   }
 
-  async groupGet(_req: any, res: IRes) {
-    const groupId = _req.params;
-    const result = await this.presentationService.groupGet(
-      new Types.ObjectId(groupId)
+  async getViewPresentation(_req: any, res: IRes) {
+    const userId = _req.params;
+    const creatorPrst = await this.presentationService.creatorGet(
+      new Types.ObjectId(userId)
+    );
+    const creatorPresentationDTO: ViewPresentationDTO[] = creatorPrst.map(
+      (p) => ({
+        id: p.id,
+        name: p.name,
+        createdAt: p.createdAt,
+        collabs: false
+      })
+    );
+    const collabsPrst = await this.presentationService.collabsGet(
+      new Types.ObjectId(userId)
+    );
+    const collabsPresentationDTO: ViewPresentationDTO[] = collabsPrst.map(
+      (p) => ({
+        id: p.id,
+        name: p.name,
+        createdAt: p.createdAt,
+        collabs: true
+      })
     );
     return res
       .status(HttpStatusCodes.OK)
-      .send(
-        result.map((g) => ({
-          id: g.id,
-          name: g.name,
-          createdAt: g.createdAt
-        }))
-      )
+      .send([...creatorPresentationDTO, ...collabsPresentationDTO])
       .end();
   }
 
@@ -122,7 +137,7 @@ export default class PresentationController {
     );
     const presentationDTO: PresentationDTOV2 = {
       name: result.name,
-      groupId: result.groupId,
+      creator: result.creator,
       slides: result.slides.map((slide: ISlide, idx: number) => {
         switch (slide.type) {
           case 1: {
