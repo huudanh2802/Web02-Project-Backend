@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 export interface ChatDTO {
   username: string;
   chat: string;
+  role: number;
   createdAt: Date;
 }
 

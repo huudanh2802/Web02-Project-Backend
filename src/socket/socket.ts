@@ -124,12 +124,25 @@ const socketServer = (app: Express) => {
     // Chat handling ################################################
     socket.on(
       "send_chat_msg",
-      (data: { username: string; chat: string; date: Date; game: string }) => {
-        const { username, chat, date, game } = data;
+      (data: {
+        username: string;
+        chat: string;
+        date: Date;
+        role: number;
+        game: string;
+      }) => {
+        const { username, chat, date, role, game } = data;
         const targetGame = games.find((g) => g.game === game);
         if (targetGame) {
-          socket.to(game).emit("receive_chat_msg", { username, chat, date });
-          gameService.updateChat(game, { username, chat, createdAt: date });
+          socket
+            .to(game)
+            .emit("receive_chat_msg", { username, chat, role, date });
+          gameService.updateChat(game, {
+            username,
+            chat,
+            role,
+            createdAt: date
+          });
           console.log(`--[SOCKET/CHAT/${game}] ${username}: ${chat}`);
         }
       }

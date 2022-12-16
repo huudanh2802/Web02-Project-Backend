@@ -6,6 +6,7 @@ import BaseModel, { IBase } from "./Base";
 export interface IChat {
   username: string;
   chat: string;
+  role: number;
   createdAt: Date;
 }
 
