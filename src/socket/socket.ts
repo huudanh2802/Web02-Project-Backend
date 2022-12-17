@@ -7,7 +7,7 @@ import { Server } from "socket.io";
 import leaveGame from "@src/socket/utils/leavegame";
 
 import { User, Game } from "@src/socket/declarations/interface";
-import { SlideDTO } from "@src/domains/dtos/PresentationDTO";
+import { MutipleChoiceDTO, Slide } from "@src/domains/dtos/PresentationDTO";
 
 const socketServer = (app: Express) => {
   // Realtime
@@ -99,20 +99,21 @@ const socketServer = (app: Express) => {
       }
     );
 
-    socket.on("show_answer", (data: { game: string; slide: SlideDTO }) => {
+    socket.on("show_answer", (data: { game: string; slide: Slide }) => {
       const { game, slide } = data;
       const targetGame = games.find((g) => g.game === game);
       if (targetGame) {
         socket.to(game).emit("show_answer");
+        const mutipleChoice = slide as MutipleChoiceDTO;
         console.log(
           `--[SOCKET/SHOW] Correct answer for Question ${slide.idx + 1} is ${
-            slide.correct
+            mutipleChoice.correct
           }\n`
         );
       }
     });
 
-    socket.on("next_question", (data: { game: string; slide: SlideDTO }) => {
+    socket.on("next_question", (data: { game: string; slide: Slide }) => {
       const { game, slide } = data;
       const targetGame = games.find((g) => g.game === game);
       if (targetGame) {

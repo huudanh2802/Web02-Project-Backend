@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-return-await */
 import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
-import PresentationDTO, {
+import {
   HeadingDTO,
   MutipleChoiceDTO,
   ParagraphDTO,

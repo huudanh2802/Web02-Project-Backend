@@ -1,12 +1,12 @@
 import RouteError from "@src/declarations/classes";
 import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
-import PresentationDTO, {
+import {
   AnswerDTO,
   HeadingDTO,
   MutipleChoiceDTO,
   ParagraphDTO,
   PresentationDTOV2,
-  Slide
+  SlideDTO
 } from "@src/domains/dtos/PresentationDTO";
 import {
   IAnswer,
@@ -32,7 +32,7 @@ export default class PresentationService {
     const newPresentation: IPresentation = {
       name: newPresentationDTO.name,
       creator: new Types.ObjectId(newPresentationDTO.creator),
-      slides: newPresentationDTO.slides.map((slide: Slide) => {
+      slides: newPresentationDTO.slides.map((slide: SlideDTO) => {
         switch (slide.type) {
           case 1: {
             const convertSlide = slide as MutipleChoiceDTO;
@@ -87,7 +87,7 @@ export default class PresentationService {
     const updatePresentation: IPresentation = {
       name: presentationDTO.name,
       creator: new Types.ObjectId(presentationDTO.creator),
-      slides: presentationDTO.slides.map((slide: Slide) => {
+      slides: presentationDTO.slides.map((slide: SlideDTO) => {
         switch (slide.type) {
           case 1: {
             const convertSlide = slide as MutipleChoiceDTO;

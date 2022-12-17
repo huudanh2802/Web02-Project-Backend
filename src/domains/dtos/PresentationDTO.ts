@@ -4,44 +4,31 @@ export interface AnswerDTO {
   placeHolder: string;
 }
 
-export interface SlideDTO {
-  idx: number;
-  question: string;
-  correct: string;
-  answers: AnswerDTO[];
-}
-
-export default interface PresentationDTO {
-  name: string;
-  groupId: string;
-  slides: SlideDTO[];
-}
-
-export type SlideDTOV2 = {
+export type Slide = {
   idx: number;
 };
 
-export type MutipleChoiceDTO = SlideDTOV2 & {
+export type MutipleChoiceDTO = Slide & {
   type: 1;
   question: string;
   correct: string;
   answers: AnswerDTO[];
 };
 
-export type HeadingDTO = SlideDTOV2 & {
+export type HeadingDTO = Slide & {
   type: 2;
   heading: string;
 };
 
-export type ParagraphDTO = SlideDTOV2 & {
+export type ParagraphDTO = Slide & {
   type: 3;
   heading: string;
   paragraph: string;
 };
 
-export type Slide = MutipleChoiceDTO | HeadingDTO | ParagraphDTO;
+export type SlideDTO = MutipleChoiceDTO | HeadingDTO | ParagraphDTO;
 export interface PresentationDTOV2 {
   name: string;
   creator: string;
-  slides: Slide[];
+  slides: SlideDTO[];
 }
