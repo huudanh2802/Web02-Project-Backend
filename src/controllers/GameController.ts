@@ -14,6 +14,7 @@ import { autoInjectable } from "tsyringe";
 import passport from "passport";
 import { Types } from "mongoose";
 import PresentationDTO from "@src/domains/dtos/PresentationDTO";
+import { GameDTO } from "@src/domains/dtos/GameDTO";
 
 @autoInjectable()
 export default class GameController {
@@ -36,6 +37,11 @@ export default class GameController {
     this.router.get(
       "/get/:id",
       async (_req, res) => await this.getPresentation(_req, res)
+    );
+    this.router.post(
+      "/newgame",
+      passport.authenticate("jwt", { session: false }),
+      async (_req, res) => await this.newGame(_req, res)
     );
 
     return this.router;
@@ -61,5 +67,11 @@ export default class GameController {
       }))
     };
     return res.status(HttpStatusCodes.OK).send(presentationDTO).end();
+  }
+
+  async newGame(_req: any, res: IRes) {
+    const { game, presentationId } = _req.body;
+    const result = await this.gameService.createNewGame(game, presentationId);
+    return res.status(HttpStatusCodes.OK).send(result.id);
   }
 }
