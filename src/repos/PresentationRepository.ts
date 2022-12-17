@@ -16,8 +16,13 @@ export default class PresentationRepository extends BaseRepository<
     super(presentationModel);
   }
 
-  async groupGet(groupId: Types.ObjectId) {
-    const result = await this.set.find({ groupId });
+  async creatorGet(userId: Types.ObjectId) {
+    const result = await this.set.find({ creator: userId });
+    return result;
+  }
+
+  async collabsGet(userId: Types.ObjectId) {
+    const result = await this.set.find({ collabs: { $in: userId } });
     return result;
   }
 }

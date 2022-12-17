@@ -1,16 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-return-await */
 import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
+import {
+  HeadingDTO,
+  MutipleChoiceDTO,
+  ParagraphDTO,
+  PresentationDTOV2
+} from "@src/domains/dtos/PresentationDTO";
+import { IRes } from "@src/domains/entities/types";
+import {
+  IAnswer,
+  IHeading,
+  IMutipleChoice,
+  IParagraph,
+  ISlide
+} from "@src/domains/models/Presentation";
 import GameService from "@src/services/GameService";
 import PresentationService from "@src/services/PresentationService";
-import { IRes } from "@src/domains/entities/types";
-import { IAnswer, ISlide } from "@src/domains/models/Presentation";
 import { Router } from "express";
-import { autoInjectable } from "tsyringe";
-import passport from "passport";
 import { Types } from "mongoose";
-import PresentationDTO from "@src/domains/dtos/PresentationDTO";
-import { GameDTO } from "@src/domains/dtos/GameDTO";
+import passport from "passport";
+import { autoInjectable } from "tsyringe";
 
 @autoInjectable()
 export default class GameController {
@@ -48,20 +58,51 @@ export default class GameController {
     const result = await this.presentationService.getPresentation(
       new Types.ObjectId(id)
     );
-    const presentationDTO: PresentationDTO = {
+    const presentationDTO: PresentationDTOV2 = {
       name: result.name,
-      groupId: result.groupId,
-      slides: result.slides.map((s: ISlide, idx: number) => ({
-        idx,
-        question: s.question,
-        correct: s.correct,
-        answers: s.answers.map((a: IAnswer) => ({
-          id: a.id,
-          answer: a.answer,
-          placeHolder: `Option ${a.id}`
-        }))
-      }))
+      creator: result.creator,
+      slides: result.slides.map((slide: ISlide, idx: number) => {
+        switch (slide.type) {
+          case 1: {
+            const convertSlide = slide as IMutipleChoice;
+            const mutipleChoice: MutipleChoiceDTO = {
+              idx,
+              type: 1,
+              question: convertSlide.question,
+              correct: convertSlide.correct,
+              answers: convertSlide.answers.map((a: IAnswer) => ({
+                id: a.id,
+                answer: a.answer,
+                placeHolder: `${a.id}.`
+              }))
+            };
+            return mutipleChoice;
+          }
+          case 2: {
+            const convertSlide = slide as IHeading;
+            const heading: HeadingDTO = {
+              idx,
+              type: 2,
+              heading: convertSlide.heading
+            };
+            return heading;
+          }
+          case 3: {
+            const convertSlide = slide as IParagraph;
+            const paragraph: ParagraphDTO = {
+              idx,
+              type: 3,
+              paragraph: convertSlide.paragraph,
+              heading: convertSlide.heading
+            };
+            return paragraph;
+          }
+          default:
+            return null;
+        }
+      })
     };
+    console.log(presentationDTO);
     return res.status(HttpStatusCodes.OK).send(presentationDTO).end();
   }
 
