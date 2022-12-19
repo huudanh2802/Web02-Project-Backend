@@ -7,6 +7,15 @@ export interface ChatDTO {
   createdAt: Date;
 }
 
+export interface QuestionDTO {
+  username: string;
+  question: string;
+  role: number;
+  answered: boolean;
+  vote: number;
+  createdAt: Date;
+}
+
 export interface GameDTO {
   game: string;
   presentationId: Types.ObjectId;

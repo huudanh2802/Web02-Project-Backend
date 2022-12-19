@@ -122,7 +122,7 @@ const socketServer = (app: Express) => {
       }
     });
 
-    // Chat handling ################################################
+    // Chat & Question handling #####################################
     socket.on(
       "send_chat_msg",
       (data: {
@@ -145,6 +145,34 @@ const socketServer = (app: Express) => {
             createdAt: date
           });
           console.log(`--[SOCKET/CHAT/${game}] ${username}: ${chat}`);
+        }
+      }
+    );
+
+    socket.on(
+      "send_question_msg",
+      (data: {
+        username: string;
+        question: string;
+        date: Date;
+        role: number;
+        game: string;
+      }) => {
+        const { username, question, date, role, game } = data;
+        const targetGame = games.find((g) => g.game === game);
+        if (targetGame) {
+          socket
+            .to(game)
+            .emit("receive_question_msg", { username, question, role, date });
+          gameService.updateQuestion(game, {
+            username,
+            question,
+            role,
+            answered: false,
+            vote: 0,
+            createdAt: date
+          });
+          console.log(`--[SOCKET/CHAT/${game}] ${username}: ${question}`);
         }
       }
     );
