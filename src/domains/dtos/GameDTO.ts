@@ -8,6 +8,7 @@ export interface ChatDTO {
 }
 
 export interface QuestionDTO {
+  idx: number;
   username: string;
   question: string;
   role: number;

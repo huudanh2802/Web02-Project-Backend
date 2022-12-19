@@ -11,6 +11,7 @@ export interface IChat {
 }
 
 export interface IQuestion {
+  idx: number;
   username: string;
   chat: string;
   role: number;

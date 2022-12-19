@@ -144,7 +144,7 @@ const socketServer = (app: Express) => {
             role,
             createdAt: date
           });
-          console.log(`--[SOCKET/CHAT/${game}] ${username}: ${chat}`);
+          console.log(`--[SOCKET/CHAT/${game}] ${username}: ${chat}\n`);
         }
       }
     );
@@ -152,19 +152,25 @@ const socketServer = (app: Express) => {
     socket.on(
       "send_question_msg",
       (data: {
+        idx: number;
         username: string;
         question: string;
         date: Date;
         role: number;
         game: string;
       }) => {
-        const { username, question, date, role, game } = data;
+        const { idx, username, question, date, role, game } = data;
         const targetGame = games.find((g) => g.game === game);
         if (targetGame) {
-          socket
-            .to(game)
-            .emit("receive_question_msg", { username, question, role, date });
+          socket.to(game).emit("receive_question_msg", {
+            idx,
+            username,
+            question,
+            role,
+            date
+          });
           gameService.updateQuestion(game, {
+            idx,
             username,
             question,
             role,
@@ -172,10 +178,30 @@ const socketServer = (app: Express) => {
             vote: 0,
             createdAt: date
           });
-          console.log(`--[SOCKET/CHAT/${game}] ${username}: ${question}`);
+          console.log(
+            `--[SOCKET/QUESTION/${game}] Q.${idx}-${username}: ${question}\n`
+          );
         }
       }
     );
+
+    socket.on("send_vote", (data: { idx: number; game: string }) => {
+      const { idx, game } = data;
+      const targetGame = games.find((g) => g.game === game);
+      if (targetGame) {
+        socket.to(game).emit("receive_vote", { idx });
+        console.log(`--[SOCKET/QUESTION/${game}] Q.${idx} received 1 upvote\n`);
+      }
+    });
+
+    socket.on("send_unvote", (data: { idx: number; game: string }) => {
+      const { idx, game } = data;
+      const targetGame = games.find((g) => g.game === game);
+      if (targetGame) {
+        socket.to(game).emit("receive_unvote", { idx });
+        console.log(`--[SOCKET/QUESTION/${game}] Q.${idx} got 1 less vote\n`);
+      }
+    });
 
     // User handling ################################################
     socket.on("join_game", (data: { username: string; game: string }) => {
