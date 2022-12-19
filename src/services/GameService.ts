@@ -95,4 +95,26 @@ export default class GameService {
     const result = await this.gameRepository.update(updatedGame);
     return result.id;
   }
+
+  async answeredQuestion(game: string, idx: number) {
+    const oldGame = await this.gameRepository.getByGame(game);
+    const oldQuestion = oldGame.question; // Question List
+    const updatedQuestion = oldQuestion[idx];
+    updatedQuestion.answered = true;
+    const updatedGame: IGame = {
+      game: oldGame.game,
+      presentationId: new Types.ObjectId(oldGame.presentationId),
+      chat: oldGame.chat,
+      question: [
+        ...oldQuestion.slice(0, idx),
+        updatedQuestion,
+        ...oldQuestion.slice(idx + 1)
+      ],
+      createdAt: oldGame.createdAt,
+      ended: false,
+      id: oldGame.id
+    };
+    const result = await this.gameRepository.update(updatedGame);
+    return result.id;
+  }
 }

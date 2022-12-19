@@ -205,6 +205,18 @@ const socketServer = (app: Express) => {
       }
     });
 
+    socket.on("send_answered", (data: { idx: number; game: string }) => {
+      const { idx, game } = data;
+      const targetGame = games.find((g) => g.game === game);
+      if (targetGame) {
+        socket.to(game).emit("receive_answered", { idx });
+        gameService.answeredQuestion(game, idx);
+        console.log(
+          `--[SOCKET/QUESTION/${game}] Q.${idx} is marked as answered\n`
+        );
+      }
+    });
+
     // User handling ################################################
     socket.on("join_game", (data: { username: string; game: string }) => {
       const { username, game } = data;
