@@ -3,6 +3,9 @@ import UpdateUserDTO from "@src/domains/dtos/UpdateUserDTO";
 import { IUser, UserModel } from "@src/domains/models/User";
 import { Types } from "mongoose";
 import { injectable } from "tsyringe";
+import { RenewPasswordDTO } from "@src/domains/dtos/RenewPasswordDTO";
+import * as bcrypt from "bcrypt";
+import UpdatePasswordDTO from "@src/domains/dtos/UpdatePasswordDTO";
 import BaseRepository from "./BaseRepository";
 
 @injectable()
@@ -33,11 +36,33 @@ export default class UserRepository extends BaseRepository<UserModel, IUser> {
   }
 
   async updateName(name: UpdateUserDTO) {
-    const result = await this.set.findOneAndUpdate(
-      { _id: name.id },
-      { fullname: name.updatedName }
-    );
     const newResult = await this.set.findOne({ _id: name.id });
+    return newResult;
+  }
+
+  async updatePassword(password: UpdatePasswordDTO) {
+    const encryptedPassword = await bcrypt.hash(password.newPassword, 10);
+    const newResult = await this.set.updateOne(
+      { _id: password.id },
+      {
+        $set: {
+          password: encryptedPassword
+        }
+      }
+    );
+    return newResult;
+  }
+
+  async renewPassword(renew: RenewPasswordDTO) {
+    const encryptedPassword = await bcrypt.hash("123456", 10);
+    const newResult = await this.set.updateOne(
+      { email: renew.email },
+      {
+        $set: {
+          password: encryptedPassword
+        }
+      }
+    );
     return newResult;
   }
 }

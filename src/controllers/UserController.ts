@@ -11,8 +11,10 @@ import { IRes } from "@src/domains/entities/types";
 import EnvVars from "@src/declarations/major/EnvVars";
 import SignupDTO from "@src/domains/dtos/SignUpDTO";
 import { GoogleDTO } from "@src/domains/dtos/GoogleDTO";
+import { RenewPasswordDTO } from "@src/domains/dtos/RenewPasswordDTO";
 import jwt from "jsonwebtoken";
 import passport from "passport";
+import UpdatePasswordDTO from "@src/domains/dtos/UpdatePasswordDTO";
 
 @autoInjectable()
 export default class UserController {
@@ -41,6 +43,10 @@ export default class UserController {
       "/googleAuthen",
       async (_req, res) => await this.googleAuthen(_req, res)
     );
+    this.router.post(
+      "/forget",
+      async (_req, res) => await this.renewPassword(_req, res)
+    );
     this.router.get(
       "/verify/:emailToken",
       async (_req, res) => await this.activeAccount(_req, res)
@@ -60,6 +66,11 @@ export default class UserController {
       passport.authenticate("jwt", { session: false }),
       async (_req, res) => await this.updateUser(_req, res)
     );
+    this.router.put(
+      "/updatepassword",
+      passport.authenticate("jwt", { session: false }),
+      async (_req, res) => await this.updatePassword(_req, res)
+    );
     return this.router;
   }
 
@@ -74,6 +85,13 @@ export default class UserController {
         fullname: result.fullname
       })
       .end();
+  }
+
+  async updatePassword(_req: any, _res: IRes) {
+    const newPass: UpdatePasswordDTO = _req.body;
+    await this.userService.updatePassword(newPass);
+
+    return _res.status(HttpStatusCodes.OK).end();
   }
 
   getUsers(): Promise<IUser[]> {
@@ -121,6 +139,13 @@ export default class UserController {
       .end();
   }
 
+  async renewPassword(_req: any, _res: IRes) {
+    const renew: RenewPasswordDTO = _req.body;
+    await this.userService.forgetPassword(renew);
+
+    return _res.status(HttpStatusCodes.OK).end();
+  }
+
   async activeAccount(_req: any, _res: IRes) {
     const { emailToken } = _req.params;
     await this.userService.activeAccount(emailToken);
@@ -136,7 +161,8 @@ export default class UserController {
       .send({
         email: result.email,
         date: result.createdAt.toJSON().slice(0, 10).replace(/-/g, "/"),
-        fullname: result.fullname
+        fullname: result.fullname,
+        password: result.password
       })
       .end();
   }
