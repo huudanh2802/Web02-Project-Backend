@@ -138,7 +138,7 @@ const socketServer = (app: Express) => {
           socket
             .to(game)
             .emit("receive_chat_msg", { username, chat, role, date });
-          gameService.updateChat(game, {
+          gameService.newChat(game, {
             username,
             chat,
             role,
@@ -169,7 +169,7 @@ const socketServer = (app: Express) => {
             role,
             date
           });
-          gameService.updateQuestion(game, {
+          gameService.newQuestion(game, {
             idx,
             username,
             question,
@@ -190,6 +190,7 @@ const socketServer = (app: Express) => {
       const targetGame = games.find((g) => g.game === game);
       if (targetGame) {
         socket.to(game).emit("receive_vote", { idx });
+        gameService.voteQuestion(game, idx, true);
         console.log(`--[SOCKET/QUESTION/${game}] Q.${idx} received 1 upvote\n`);
       }
     });
@@ -199,6 +200,7 @@ const socketServer = (app: Express) => {
       const targetGame = games.find((g) => g.game === game);
       if (targetGame) {
         socket.to(game).emit("receive_unvote", { idx });
+        gameService.voteQuestion(game, idx, false);
         console.log(`--[SOCKET/QUESTION/${game}] Q.${idx} got 1 less vote\n`);
       }
     });

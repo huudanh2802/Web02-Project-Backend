@@ -42,7 +42,7 @@ export default class GameService {
     return result.id;
   }
 
-  async updateChat(game: string, chatDTO: ChatDTO) {
+  async newChat(game: string, chatDTO: ChatDTO) {
     const oldGame = await this.gameRepository.getByGame(game);
     const oldChat = oldGame.chat;
     const updatedGame: IGame = {
@@ -58,7 +58,7 @@ export default class GameService {
     return result.id;
   }
 
-  async updateQuestion(game: string, questionDTO: QuestionDTO) {
+  async newQuestion(game: string, questionDTO: QuestionDTO) {
     const oldGame = await this.gameRepository.getByGame(game);
     const oldQuestion = oldGame.question;
     const updatedGame: IGame = {
@@ -66,6 +66,28 @@ export default class GameService {
       presentationId: new Types.ObjectId(oldGame.presentationId),
       chat: oldGame.chat,
       question: [...oldQuestion, questionDTO],
+      createdAt: oldGame.createdAt,
+      ended: false,
+      id: oldGame.id
+    };
+    const result = await this.gameRepository.update(updatedGame);
+    return result.id;
+  }
+
+  async voteQuestion(game: string, idx: number, upvote: boolean) {
+    const oldGame = await this.gameRepository.getByGame(game);
+    const oldQuestion = oldGame.question; // Question List
+    const updatedQuestion = oldQuestion[idx];
+    updatedQuestion.vote += upvote ? 1 : -1;
+    const updatedGame: IGame = {
+      game: oldGame.game,
+      presentationId: new Types.ObjectId(oldGame.presentationId),
+      chat: oldGame.chat,
+      question: [
+        ...oldQuestion.slice(0, idx),
+        updatedQuestion,
+        ...oldQuestion.slice(idx + 1)
+      ],
       createdAt: oldGame.createdAt,
       ended: false,
       id: oldGame.id
