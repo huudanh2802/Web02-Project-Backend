@@ -102,7 +102,7 @@ export default class GameController {
         }
       })
     };
-    console.log(presentationDTO);
+    // console.log(presentationDTO);
     return res.status(HttpStatusCodes.OK).send(presentationDTO).end();
   }
 
