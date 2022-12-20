@@ -17,6 +17,17 @@ export interface QuestionDTO {
   createdAt: Date;
 }
 
+export interface ResultDTO {
+  username: string;
+  answer: string;
+  createdAt: Date;
+}
+
+export interface QResultDTO {
+  question: number;
+  result: ResultDTO[];
+}
+
 export interface GameDTO {
   game: string;
   presentationId: Types.ObjectId;

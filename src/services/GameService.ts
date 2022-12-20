@@ -1,7 +1,12 @@
-import PresentationRepository from "@src/repos/PresentationRepository";
+/* eslint-disable no-unused-expressions */
 import GameRepository from "@src/repos/GameRepository";
 import { IGame } from "@src/domains/models/Game";
-import { ChatDTO, QuestionDTO } from "@src/domains/dtos/GameDTO";
+import {
+  ChatDTO,
+  QuestionDTO,
+  ResultDTO,
+  QResultDTO
+} from "@src/domains/dtos/GameDTO";
 import { Types } from "mongoose";
 import { injectable } from "tsyringe";
 
@@ -17,6 +22,7 @@ export default class GameService {
     const newGame: IGame = {
       game,
       presentationId: new Types.ObjectId(presentationId),
+      result: [],
       chat: [],
       question: [],
       createdAt: new Date(),
@@ -32,6 +38,7 @@ export default class GameService {
     const endedGame: IGame = {
       game: currentGame.game,
       presentationId: new Types.ObjectId(currentGame.presentationId),
+      result: currentGame.result,
       chat: currentGame.chat,
       question: currentGame.question,
       createdAt: currentGame.createdAt,
@@ -42,12 +49,63 @@ export default class GameService {
     return result.id;
   }
 
+  async newChoiceResult(game: string, question: number, resultDTO: ResultDTO) {
+    const oldGame = await this.gameRepository.getByGame(game);
+    const oldResult = oldGame.result;
+    const updatedGame: IGame = {
+      game: oldGame.game,
+      presentationId: new Types.ObjectId(oldGame.presentationId),
+      result: [...oldResult, { question, result: [resultDTO] }],
+      chat: oldGame.chat,
+      question: oldGame.question,
+      createdAt: oldGame.createdAt,
+      ended: false,
+      id: oldGame.id
+    };
+    const result = await this.gameRepository.update(updatedGame);
+    return result.id;
+  }
+
+  async updateChoiceResult(
+    game: string,
+    question: number,
+    resultDTO: ResultDTO
+  ) {
+    const oldGame = await this.gameRepository.getByGame(game);
+    const oldResult = oldGame.result;
+    const qResultIdx = oldResult.findIndex(
+      (qResult: QResultDTO) => qResult.question === question
+    );
+    const oldQResult = oldResult[qResultIdx];
+    const qResultDTO = { question, result: [...oldQResult.result, resultDTO] };
+    oldResult[qResultIdx];
+    const updatedGame = oldGame;
+    updatedGame.result = [
+      ...oldResult.slice(0, qResultIdx),
+      qResultDTO,
+      ...oldResult.slice(qResultIdx + 1)
+    ];
+    const result = await this.gameRepository.update(updatedGame);
+    return result.id;
+  }
+
+  async handleChoiceResult(
+    game: string,
+    question: number,
+    resultDTO: ResultDTO
+  ) {
+    const qResultExist = await this.gameRepository.qResultExist(game, question);
+    if (qResultExist) this.updateChoiceResult(game, question, resultDTO);
+    else this.newChoiceResult(game, question, resultDTO);
+  }
+
   async newChat(game: string, chatDTO: ChatDTO) {
     const oldGame = await this.gameRepository.getByGame(game);
     const oldChat = oldGame.chat;
     const updatedGame: IGame = {
       game: oldGame.game,
       presentationId: new Types.ObjectId(oldGame.presentationId),
+      result: oldGame.result,
       chat: [...oldChat, chatDTO],
       question: oldGame.question,
       createdAt: oldGame.createdAt,
@@ -64,6 +122,7 @@ export default class GameService {
     const updatedGame: IGame = {
       game: oldGame.game,
       presentationId: new Types.ObjectId(oldGame.presentationId),
+      result: oldGame.result,
       chat: oldGame.chat,
       question: [...oldQuestion, questionDTO],
       createdAt: oldGame.createdAt,
@@ -82,6 +141,7 @@ export default class GameService {
     const updatedGame: IGame = {
       game: oldGame.game,
       presentationId: new Types.ObjectId(oldGame.presentationId),
+      result: oldGame.result,
       chat: oldGame.chat,
       question: [
         ...oldQuestion.slice(0, idx),
@@ -104,6 +164,7 @@ export default class GameService {
     const updatedGame: IGame = {
       game: oldGame.game,
       presentationId: new Types.ObjectId(oldGame.presentationId),
+      result: oldGame.result,
       chat: oldGame.chat,
       question: [
         ...oldQuestion.slice(0, idx),

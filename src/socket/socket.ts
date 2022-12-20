@@ -85,9 +85,19 @@ const socketServer = (app: Express) => {
     // In-game handling #############################################
     socket.on(
       "submit_answer",
-      (data: { question: number; id: string; game: string }) => {
-        const { question, id, game } = data;
+      (data: {
+        question: number;
+        username: string;
+        id: string;
+        game: string;
+      }) => {
+        const { question, username, id, game } = data;
         const targetGame = games.find((g) => g.game === game);
+        gameService.handleChoiceResult(game, question, {
+          username,
+          answer: id,
+          createdAt: new Date()
+        });
         if (targetGame) {
           socket.to(game).emit("submit_answer", { id });
           console.log(
