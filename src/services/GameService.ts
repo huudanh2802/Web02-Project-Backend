@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-expressions */
 import GameRepository from "@src/repos/GameRepository";
 import { IGame } from "@src/domains/models/Game";
 import {
@@ -78,7 +77,6 @@ export default class GameService {
     );
     const oldQResult = oldResult[qResultIdx];
     const qResultDTO = { question, result: [...oldQResult.result, resultDTO] };
-    oldResult[qResultIdx];
     const updatedGame = oldGame;
     updatedGame.result = [
       ...oldResult.slice(0, qResultIdx),

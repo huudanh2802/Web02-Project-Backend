@@ -89,13 +89,15 @@ const socketServer = (app: Express) => {
         question: number;
         username: string;
         id: string;
+        correct: boolean;
         game: string;
       }) => {
-        const { question, username, id, game } = data;
+        const { question, username, id, correct, game } = data;
         const targetGame = games.find((g) => g.game === game);
         gameService.handleChoiceResult(game, question, {
           username,
           answer: id,
+          correct,
           createdAt: new Date()
         });
         if (targetGame) {

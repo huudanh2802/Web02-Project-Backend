@@ -20,6 +20,7 @@ export interface QuestionDTO {
 export interface ResultDTO {
   username: string;
   answer: string;
+  correct: boolean;
   createdAt: Date;
 }
 
