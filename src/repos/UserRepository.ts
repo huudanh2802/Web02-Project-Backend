@@ -36,18 +36,19 @@ export default class UserRepository extends BaseRepository<UserModel, IUser> {
   }
 
   async updateName(name: UpdateUserDTO) {
-    const newResult = await this.set.findOne({ _id: name.id });
+    const newResult = await this.set.findOneAndUpdate(
+      { _id: name.id },
+      { fullname: name.updatedName }
+    );
     return newResult;
   }
 
   async updatePassword(password: UpdatePasswordDTO) {
     const encryptedPassword = await bcrypt.hash(password.newPassword, 10);
-    const newResult = await this.set.updateOne(
+    const newResult = await this.set.findOneAndUpdate(
       { _id: password.id },
       {
-        $set: {
-          password: encryptedPassword
-        }
+        password: encryptedPassword
       }
     );
     return newResult;
@@ -55,12 +56,10 @@ export default class UserRepository extends BaseRepository<UserModel, IUser> {
 
   async renewPassword(renew: RenewPasswordDTO) {
     const encryptedPassword = await bcrypt.hash("123456", 10);
-    const newResult = await this.set.updateOne(
+    const newResult = await this.set.findOneAndUpdate(
       { email: renew.email },
       {
-        $set: {
-          password: encryptedPassword
-        }
+        password: encryptedPassword
       }
     );
     return newResult;
