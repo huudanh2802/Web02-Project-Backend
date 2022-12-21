@@ -107,8 +107,12 @@ export default class GameController {
   }
 
   async newGame(_req: any, res: IRes) {
-    const { game, presentationId } = _req.body;
-    const result = await this.gameService.createNewGame(game, presentationId);
+    const { game, presentationId, groupId } = _req.body;
+    const result = await this.gameService.createNewGame(
+      game,
+      presentationId,
+      groupId
+    );
     return res.status(HttpStatusCodes.OK).send(result.id);
   }
 }

@@ -31,6 +31,7 @@ export interface QResultDTO {
 
 export interface GameDTO {
   game: string;
+  groupId: Types.ObjectId;
   presentationId: Types.ObjectId;
   chat: ChatDTO[];
   ended: boolean;

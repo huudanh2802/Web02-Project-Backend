@@ -8,5 +8,5 @@ export interface Game {
   game: string;
   presentation: string;
   users: User[];
-  locked: boolean;
+  group: string | null;
 }

@@ -28,16 +28,19 @@ const socketServer = (app: Express) => {
     console.log(`--[SOCKET/CONNECT] User connected ${socket.id}\n`);
 
     // Game state handling ##########################################
-    socket.on("create_game", (data: { game: string; presentation: string }) => {
-      const { game, presentation } = data;
-      socket.join(game);
+    socket.on(
+      "create_game",
+      (data: { game: string; presentation: string; group: string | null }) => {
+        const { game, presentation, group } = data;
+        socket.join(game);
 
-      // Add the new game to list
-      games.push({ game, presentation, users: [], locked: false });
-      console.log(`--[SOCKET/GAME]\n${JSON.stringify(games)}\n`);
+        // Add the new game to list
+        games.push({ game, presentation, users: [], group });
+        console.log(`--[SOCKET/GAME]\n${JSON.stringify(games)}\n`);
 
-      console.log(`--[SOCKET/CREATE] Game ${game} has been initiated\n`);
-    });
+        console.log(`--[SOCKET/CREATE] Game ${game} has been initiated\n`);
+      }
+    );
 
     socket.on("start_game", (data: { game: string }) => {
       const { game } = data;
@@ -45,7 +48,6 @@ const socketServer = (app: Express) => {
       socket.to(game).emit("start_game");
       const targetGame = games.find((g) => g.game === game);
       if (targetGame) {
-        targetGame.locked = true;
         console.log(`--[SOCKET/CREATE] Game ${game} has started\n`);
       } else {
         console.log(
@@ -237,7 +239,7 @@ const socketServer = (app: Express) => {
       // Save new user to game
       const targetGame = games.find((g) => g.game === game);
       let success = true;
-      if (targetGame && targetGame.locked === false) {
+      if (targetGame && targetGame.group === null) {
         targetGame.users.push({ id: socket.id, username, game });
         allUsers.push({ id: socket.id, username, game });
         const targetGameUsers = allUsers.filter((user) => user.game === game);
@@ -257,19 +259,19 @@ const socketServer = (app: Express) => {
         );
         console.log(`--[SOCKET/JOIN] All Users\n${JSON.stringify(allUsers)}\n`);
       } else {
-        let message = "Game has already started";
+        let isPrivate = false;
         success = false;
-        if (targetGame && targetGame.locked === true) {
+        if (targetGame && targetGame.group !== null) {
+          isPrivate = true;
+          console.log(
+            `--[SOCKET/JOIN] ${username} tried to join private game ${game}\n`
+          );
+        } else {
           console.log(
             `--[SOCKET/JOIN] ${username} tried to join non-existent game ${game}\n`
           );
-        } else {
-          message = "Game not found";
-          console.log(
-            `--[SOCKET/JOIN] ${username} tried to join locked game ${game}\n`
-          );
         }
-        socket.emit("join_game_result", { success, game, message });
+        socket.emit("join_game_result", { success, game, isPrivate });
         socket.leave(game);
       }
     });
