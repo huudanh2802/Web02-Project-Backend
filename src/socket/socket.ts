@@ -3,6 +3,7 @@ import EnvVars from "@src/declarations/major/EnvVars";
 import http from "http";
 import GameService from "@src/services/GameService";
 import GameRepository from "@src/repos/GameRepository";
+import PresentationRepository from "@src/repos/PresentationRepository";
 import { Server } from "socket.io";
 import leaveGame from "@src/socket/utils/leavegame";
 
@@ -17,7 +18,12 @@ const socketServer = (app: Express) => {
   let allUsers: User[] = [];
 
   const gameRepository: GameRepository = new GameRepository();
-  const gameService: GameService = new GameService(gameRepository);
+  const presentationRepository: PresentationRepository =
+    new PresentationRepository();
+  const gameService: GameService = new GameService(
+    gameRepository,
+    presentationRepository
+  );
   const io = new Server(server, {
     cors: {
       origin: EnvVars.clientHost,
@@ -232,49 +238,54 @@ const socketServer = (app: Express) => {
     });
 
     // User handling ################################################
-    socket.on("join_game", (data: { username: string; game: string }) => {
-      const { username, game } = data;
-      socket.join(game);
+    socket.on(
+      "join_game",
+      (data: { username: string; game: string; groupId: string }) => {
+        const { username, game, groupId } = data;
+        socket.join(game);
 
-      // Save new user to game
-      const targetGame = games.find((g) => g.game === game);
-      let success = true;
-      if (targetGame && targetGame.group === null) {
-        targetGame.users.push({ id: socket.id, username, game });
-        allUsers.push({ id: socket.id, username, game });
-        const targetGameUsers = allUsers.filter((user) => user.game === game);
-        socket.to(game).emit(`${game}_users`, { users: targetGameUsers });
-        socket.emit(`${game}_users`, { users: targetGameUsers });
+        // Save new user to game
+        const targetGame = games.find((g) => g.game === game);
+        let success = true;
+        if (targetGame && targetGame.group === groupId) {
+          targetGame.users.push({ id: socket.id, username, game });
+          allUsers.push({ id: socket.id, username, game });
+          const targetGameUsers = allUsers.filter((user) => user.game === game);
+          socket.to(game).emit(`${game}_users`, { users: targetGameUsers });
+          socket.emit(`${game}_users`, { users: targetGameUsers });
 
-        socket.emit("join_game_result", {
-          success,
-          game: targetGame.game,
-          presentation: targetGame.presentation
-        });
-        console.log(`--[SOCKET/JOIN] ${username} has joined the game\n`);
-        console.log(
-          `--[SOCKET/JOIN] Game ${targetGame.game}\n${JSON.stringify(
-            allUsers
-          )}\n`
-        );
-        console.log(`--[SOCKET/JOIN] All Users\n${JSON.stringify(allUsers)}\n`);
-      } else {
-        let isPrivate = false;
-        success = false;
-        if (targetGame && targetGame.group !== null) {
-          isPrivate = true;
+          socket.emit("join_game_result", {
+            success,
+            game: targetGame.game,
+            presentation: targetGame.presentation
+          });
+          console.log(`--[SOCKET/JOIN] ${username} has joined the game\n`);
           console.log(
-            `--[SOCKET/JOIN] ${username} tried to join private game ${game}\n`
+            `--[SOCKET/JOIN] Game ${targetGame.game}\n${JSON.stringify(
+              allUsers
+            )}\n`
+          );
+          console.log(
+            `--[SOCKET/JOIN] All Users\n${JSON.stringify(allUsers)}\n`
           );
         } else {
-          console.log(
-            `--[SOCKET/JOIN] ${username} tried to join non-existent game ${game}\n`
-          );
+          let isPrivate = false;
+          success = false;
+          if (targetGame && targetGame.group !== groupId) {
+            isPrivate = true;
+            console.log(
+              `--[SOCKET/JOIN] ${username} tried to join private game ${game}\n`
+            );
+          } else {
+            console.log(
+              `--[SOCKET/JOIN] ${username} tried to join non-existent game ${game}\n`
+            );
+          }
+          socket.emit("join_game_result", { success, game, isPrivate });
+          socket.leave(game);
         }
-        socket.emit("join_game_result", { success, game, isPrivate });
-        socket.leave(game);
       }
-    });
+    );
 
     socket.on("leave_game", (data) => {
       const { username, game } = data;

@@ -21,6 +21,7 @@ import { Router } from "express";
 import { Types } from "mongoose";
 import passport from "passport";
 import { autoInjectable } from "tsyringe";
+import RouteError from "@src/declarations/classes";
 
 @autoInjectable()
 export default class GameController {
@@ -43,6 +44,10 @@ export default class GameController {
     this.router.get(
       "/get/:id",
       async (_req, res) => await this.getPresentation(_req, res)
+    );
+    this.router.get(
+      "/currentPresentation/:groupId",
+      async (_req, res) => await this.getCurrentPresentation(_req, res)
     );
     this.router.post(
       "/newgame",
@@ -104,6 +109,13 @@ export default class GameController {
     };
     // console.log(presentationDTO);
     return res.status(HttpStatusCodes.OK).send(presentationDTO).end();
+  }
+
+  async getCurrentPresentation(_req: any, res: IRes) {
+    const { groupId } = _req.params;
+    const result = await this.gameService.getCurrentPresentation(groupId);
+    if (result.success) return res.status(HttpStatusCodes.OK).send(result);
+    throw new RouteError(HttpStatusCodes.NOT_FOUND, "No current game");
   }
 
   async newGame(_req: any, res: IRes) {

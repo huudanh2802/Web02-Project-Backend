@@ -1,4 +1,5 @@
 import GameRepository from "@src/repos/GameRepository";
+import PresentationRepository from "@src/repos/PresentationRepository";
 import { IGame } from "@src/domains/models/Game";
 import {
   ChatDTO,
@@ -13,8 +14,25 @@ import { injectable } from "tsyringe";
 export default class GameService {
   gameRepository: GameRepository;
 
-  constructor(gameRepository: GameRepository) {
+  presentationRepository: PresentationRepository;
+
+  constructor(
+    gameRepository: GameRepository,
+    presentationRepository: PresentationRepository
+  ) {
     this.gameRepository = gameRepository;
+    this.presentationRepository = presentationRepository;
+  }
+
+  async getCurrentPresentation(groupId: Types.ObjectId) {
+    const game = await this.gameRepository.getByGroupId(groupId);
+    if (game) {
+      const presentation = await this.presentationRepository.get(
+        game.presentationId
+      );
+      return { success: true, game, presentation };
+    }
+    return { success: false };
   }
 
   async createNewGame(
