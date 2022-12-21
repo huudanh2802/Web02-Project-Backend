@@ -113,14 +113,17 @@ const socketServer = (app: Express) => {
       }) => {
         const { question, username, id, correct, game } = data;
         const targetGame = games.find((g) => g.game === game);
+        const createdAt = new Date();
         gameService.handleChoiceResult(game, question, {
           username,
           answer: id,
           correct,
-          createdAt: new Date()
+          createdAt
         });
         if (targetGame) {
-          socket.to(game).emit("submit_answer", { id });
+          socket
+            .to(game)
+            .emit("submit_answer", { username, id, correct, createdAt });
           console.log(
             `--[SOCKET/SUBMIT] ${socket.id}'s answer for Question ${
               question + 1
@@ -257,6 +260,8 @@ const socketServer = (app: Express) => {
 
         // Save new user to game
         const targetGame = games.find((g) => g.game === game);
+        console.log(targetGame?.group);
+        console.log(groupId);
         let success = true;
         if (targetGame && targetGame.group === groupId) {
           targetGame.users.push({ id: socket.id, username, game });
