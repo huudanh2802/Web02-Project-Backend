@@ -1,11 +1,7 @@
 /* eslint-disable object-shorthand */
-import UpdateUserDTO from "@src/domains/dtos/UpdateUserDTO";
 import { IUser, UserModel } from "@src/domains/models/User";
 import { Types } from "mongoose";
 import { injectable } from "tsyringe";
-import { RenewPasswordDTO } from "@src/domains/dtos/RenewPasswordDTO";
-import * as bcrypt from "bcrypt";
-import UpdatePasswordDTO from "@src/domains/dtos/UpdatePasswordDTO";
 import BaseRepository from "./BaseRepository";
 
 @injectable()
@@ -35,32 +31,26 @@ export default class UserRepository extends BaseRepository<UserModel, IUser> {
     return result;
   }
 
-  async updateName(name: UpdateUserDTO) {
+  async updateName(confirmId: string, newName: string) {
     const newResult = await this.set.findOneAndUpdate(
-      { _id: name.id },
-      { fullname: name.updatedName }
+      { _id: confirmId },
+      { fullname: newName }
     );
     return newResult;
   }
 
-  async updatePassword(password: UpdatePasswordDTO) {
-    const encryptedPassword = await bcrypt.hash(password.newPassword, 10);
+  async updatePassword(confirmId: string, newPassword: string) {
     const newResult = await this.set.findOneAndUpdate(
-      { _id: password.id },
-      {
-        password: encryptedPassword
-      }
+      { _id: confirmId },
+      { password: newPassword }
     );
     return newResult;
   }
 
-  async renewPassword(renew: RenewPasswordDTO) {
-    const encryptedPassword = await bcrypt.hash("123456", 10);
+  async renewPassword(confirmEmail: string, newPassword: string) {
     const newResult = await this.set.findOneAndUpdate(
-      { email: renew.email },
-      {
-        password: encryptedPassword
-      }
+      { email: confirmEmail },
+      { password: newPassword }
     );
     return newResult;
   }

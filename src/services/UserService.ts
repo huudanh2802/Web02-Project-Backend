@@ -78,7 +78,12 @@ export default class UserService {
       // eslint-disable-next-line no-console
       if (err) console.log(err);
     });
-    await this.userRepository.renewPassword(renew);
+    const encryptedPassword = await bcrypt.hash("123456", 10);
+    const newResult = await this.userRepository.renewPassword(
+      renew.email,
+      encryptedPassword
+    );
+    return newResult;
   }
 
   async signup(signup: SignupDTO) {
@@ -161,11 +166,19 @@ export default class UserService {
   }
 
   async updateName(name: UpdateUserDTO) {
-    const newName = await this.userRepository.updateName(name);
+    const newName = await this.userRepository.updateName(
+      name.id,
+      name.updatedName
+    );
     return newName;
   }
 
   async updatePassword(password: UpdatePasswordDTO) {
-    await this.userRepository.updatePassword(password);
+    const encryptedPassword = await bcrypt.hash(password.newPassword, 10);
+    const newResult = await this.userRepository.updatePassword(
+      password.id,
+      encryptedPassword
+    );
+    return newResult;
   }
 }
