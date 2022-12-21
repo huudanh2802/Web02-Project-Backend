@@ -41,6 +41,17 @@ const socketServer = (app: Express) => {
         socket.join(game);
 
         // Add the new game to list
+        if (group) {
+          const targetGame = games.find((g) => g.group === group);
+          if (targetGame) {
+            games = games.filter((g) => g.game !== targetGame.game);
+            socket.to(targetGame.game).emit("disrupt_game");
+            gameService.endGame(targetGame.game);
+            console.log(
+              `--[SOCKET/DISRUPT] Group ${group}: Game ${targetGame.game} is replaced with Game ${game}\n`
+            );
+          }
+        }
         games.push({ game, presentation, users: [], group });
         console.log(`--[SOCKET/GAME]\n${JSON.stringify(games)}\n`);
 
