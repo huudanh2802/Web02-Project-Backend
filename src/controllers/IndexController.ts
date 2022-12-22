@@ -6,7 +6,6 @@ import { Router } from "express";
 import { autoInjectable } from "tsyringe";
 import jwt from "jsonwebtoken";
 import EnvVars from "@src/declarations/major/EnvVars";
-import { IRes } from "@src/domains/entities/types";
 
 @autoInjectable()
 export default class IndexController {
@@ -27,7 +26,7 @@ export default class IndexController {
     return this.router;
   }
 
-  async refreshToken(_req: any, res: IRes) {
+  async refreshToken(_req: any, res: any) {
     const sessionId = _req.body;
     const account = await this.userService.getUser(sessionId);
     const { id } = account;

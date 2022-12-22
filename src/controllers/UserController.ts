@@ -7,7 +7,6 @@ import { Router } from "express";
 
 import { autoInjectable } from "tsyringe";
 import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
-import { IRes } from "@src/domains/entities/types";
 import EnvVars from "@src/declarations/major/EnvVars";
 import SignupDTO from "@src/domains/dtos/SignUpDTO";
 import { GoogleDTO } from "@src/domains/dtos/GoogleDTO";
@@ -69,7 +68,7 @@ export default class UserController {
     return this.router;
   }
 
-  async getMemberSearch(_req: any, res: IRes) {
+  async getMemberSearch(_req: any, res: any) {
     const { id } = _req.params;
     const result = await this.userService.getMember(id);
     const mapResult: MemberOptionDTO[] = result.map((u) => ({
@@ -82,7 +81,7 @@ export default class UserController {
     return res.status(HttpStatusCodes.OK).send(mapResult).end();
   }
 
-  async updateUser(_req: any, res: IRes) {
+  async updateUser(_req: any, res: any) {
     const updateName = _req.body;
     const result = await this.userService.updateName(updateName);
     return res
@@ -99,7 +98,7 @@ export default class UserController {
     return this.userService.getUsers();
   }
 
-  async login(_req: any, _res: IRes) {
+  async login(_req: any, _res: any) {
     const login: LoginDTO = _req.body;
     const account = await this.userService.login(login);
     const { id } = account;
@@ -116,13 +115,13 @@ export default class UserController {
       .end();
   }
 
-  async signup(_req: any, _res: IRes) {
+  async signup(_req: any, _res: any) {
     const signup: SignupDTO = _req.body;
     await this.userService.signup(signup);
     return _res.status(HttpStatusCodes.OK).end();
   }
 
-  async googleAuthen(_req: any, _res: IRes) {
+  async googleAuthen(_req: any, _res: any) {
     const google: GoogleDTO = _req.body;
     const { user, newAccount } = await this.userService.googleAuthen(google);
     const { id } = user;
@@ -140,13 +139,13 @@ export default class UserController {
       .end();
   }
 
-  async activeAccount(_req: any, _res: IRes) {
+  async activeAccount(_req: any, _res: any) {
     const { emailToken } = _req.params;
     await this.userService.activeAccount(emailToken);
     return _res.status(HttpStatusCodes.OK).end();
   }
 
-  async getUser(_req: any, _res: IRes) {
+  async getUser(_req: any, _res: any) {
     const { id } = _req.params;
     const result = await this.userService.getUser(id);
 
@@ -160,7 +159,7 @@ export default class UserController {
       .end();
   }
 
-  async getMemberSelection(req: any, res: IRes) {
+  async getMemberSelection(req: any, res: any) {
     const { id } = req.params;
     const result = await this.userService.getMember(id);
     const mapResult = result.map((u) => ({

@@ -7,7 +7,6 @@ import {
   ParagraphDTO,
   PresentationDTO
 } from "@src/domains/dtos/PresentationDTO";
-import { IRes } from "@src/domains/entities/types";
 import {
   IAnswer,
   IHeading,
@@ -53,7 +52,7 @@ export default class GameController {
     return this.router;
   }
 
-  async getPresentation(_req: any, res: IRes) {
+  async getPresentation(_req: any, res: any) {
     const id = _req.params;
     const result = await this.presentationService.getPresentation(
       new Types.ObjectId(id)
@@ -106,7 +105,7 @@ export default class GameController {
     return res.status(HttpStatusCodes.OK).send(presentationDTO).end();
   }
 
-  async newGame(_req: any, res: IRes) {
+  async newGame(_req: any, res: any) {
     const { game, presentationId } = _req.body;
     const result = await this.gameService.createNewGame(game, presentationId);
     return res.status(HttpStatusCodes.OK).send(result.id);
