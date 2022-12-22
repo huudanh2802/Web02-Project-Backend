@@ -5,7 +5,7 @@ import {
   HeadingDTO,
   MutipleChoiceDTO,
   ParagraphDTO,
-  PresentationDTOV2
+  PresentationDTO
 } from "@src/domains/dtos/PresentationDTO";
 import { IRes } from "@src/domains/entities/types";
 import {
@@ -58,7 +58,7 @@ export default class GameController {
     const result = await this.presentationService.getPresentation(
       new Types.ObjectId(id)
     );
-    const presentationDTO: PresentationDTOV2 = {
+    const presentationDTO: PresentationDTO = {
       name: result.name,
       creator: result.creator,
       slides: result.slides.map((slide: ISlide, idx: number) => {

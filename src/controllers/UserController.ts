@@ -13,6 +13,7 @@ import SignupDTO from "@src/domains/dtos/SignUpDTO";
 import { GoogleDTO } from "@src/domains/dtos/GoogleDTO";
 import jwt from "jsonwebtoken";
 import passport from "passport";
+import MemberOptionDTO from "@src/domains/dtos/MemberOptionDTO";
 
 @autoInjectable()
 export default class UserController {
@@ -60,7 +61,25 @@ export default class UserController {
       passport.authenticate("jwt", { session: false }),
       async (_req, res) => await this.updateUser(_req, res)
     );
+    this.router.get(
+      "/getMemberSearch/:id",
+      passport.authenticate("jwt", { session: false }),
+      async (_req, res) => await this.getMemberSearch(_req, res)
+    );
     return this.router;
+  }
+
+  async getMemberSearch(_req: any, res: IRes) {
+    const { id } = _req.params;
+    const result = await this.userService.getMember(id);
+    const mapResult: MemberOptionDTO[] = result.map((u) => ({
+      id: u.id.toString(),
+      fullname: u.fullname,
+      email: u.email
+    }));
+    res.header("Access-Control-Allow-Origin", "*");
+
+    return res.status(HttpStatusCodes.OK).send(mapResult).end();
   }
 
   async updateUser(_req: any, res: IRes) {
