@@ -1,22 +1,25 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import RouteError from "@src/declarations/classes";
 import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
+import MemberOptionDTO from "@src/domains/dtos/MemberOptionDTO";
 import {
   AnswerDTO,
   HeadingDTO,
   MutipleChoiceDTO,
   ParagraphDTO,
-  PresentationDTOV2,
+  PresentationDTO,
   SlideDTO
 } from "@src/domains/dtos/PresentationDTO";
 import {
-  IAnswer,
   IHeading,
   IMutipleChoice,
   IParagraph,
   IPresentation,
   ISlide
 } from "@src/domains/models/Presentation";
+import { IUser } from "@src/domains/models/User";
 import PresentationRepository from "@src/repos/PresentationRepository";
+import UserRepository from "@src/repos/UserRepository";
 import { Types } from "mongoose";
 import { injectable } from "tsyringe";
 
@@ -24,14 +27,40 @@ import { injectable } from "tsyringe";
 export default class PresentationService {
   presentationRepository: PresentationRepository;
 
-  constructor(presentationRepository: PresentationRepository) {
+  userRepository: UserRepository;
+
+  constructor(
+    presentationRepository: PresentationRepository,
+    userRepository: UserRepository
+  ) {
     this.presentationRepository = presentationRepository;
+    this.userRepository = userRepository;
   }
 
-  async newPresentation(newPresentationDTO: PresentationDTOV2) {
+  async updateCollabs(id: Types.ObjectId, newCollabs: MemberOptionDTO[]) {
+    const presentation: IPresentation = await this.presentationRepository.get(
+      id
+    );
+    presentation.collabs = newCollabs.map((m) => new Types.ObjectId(m.id));
+    await this.presentationRepository.update(presentation);
+    return presentation.id;
+  }
+
+  async getCollabs(id: Types.ObjectId) {
+    const presentation: IPresentation = await this.presentationRepository.get(
+      id
+    );
+    const collabs: IUser[] = await this.userRepository.getMany(
+      presentation.collabs!
+    );
+    return collabs;
+  }
+
+  async newPresentation(newPresentationDTO: PresentationDTO) {
     const newPresentation: IPresentation = {
       name: newPresentationDTO.name,
       creator: new Types.ObjectId(newPresentationDTO.creator),
+      collabs: [],
       slides: newPresentationDTO.slides.map((slide: SlideDTO) => {
         switch (slide.type) {
           case 1: {
@@ -80,13 +109,14 @@ export default class PresentationService {
   }
 
   async updatePresentation(
-    presentationDTO: PresentationDTOV2,
+    presentationDTO: PresentationDTO,
     presentationId: Types.ObjectId
   ) {
     const oPresent = await this.presentationRepository.get(presentationId);
     const updatePresentation: IPresentation = {
       name: presentationDTO.name,
       creator: new Types.ObjectId(presentationDTO.creator),
+      collabs: oPresent.collabs,
       slides: presentationDTO.slides.map((slide: SlideDTO) => {
         switch (slide.type) {
           case 1: {

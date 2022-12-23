@@ -5,16 +5,17 @@ import { IUser } from "@src/domains/models/User";
 import UserService from "@src/services/UserService";
 import { Router } from "express";
 
-import { autoInjectable } from "tsyringe";
-import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
-import { IRes } from "@src/domains/entities/types";
 import EnvVars from "@src/declarations/major/EnvVars";
-import SignupDTO from "@src/domains/dtos/SignUpDTO";
+import HttpStatusCodes from "@src/declarations/major/HttpStatusCodes";
 import { GoogleDTO } from "@src/domains/dtos/GoogleDTO";
+import MemberOptionDTO from "@src/domains/dtos/MemberOptionDTO";
 import { RenewPasswordDTO } from "@src/domains/dtos/RenewPasswordDTO";
+import SignupDTO from "@src/domains/dtos/SignUpDTO";
+import UpdatePasswordDTO from "@src/domains/dtos/UpdatePasswordDTO";
+import { IRes } from "@src/domains/entities/types";
 import jwt from "jsonwebtoken";
 import passport from "passport";
-import UpdatePasswordDTO from "@src/domains/dtos/UpdatePasswordDTO";
+import { autoInjectable } from "tsyringe";
 
 @autoInjectable()
 export default class UserController {
@@ -71,10 +72,28 @@ export default class UserController {
       passport.authenticate("jwt", { session: false }),
       async (_req, res) => await this.updatePassword(_req, res)
     );
+    this.router.get(
+      "/getMemberSearch/:id",
+      passport.authenticate("jwt", { session: false }),
+      async (_req, res) => await this.getMemberSearch(_req, res)
+    );
     return this.router;
   }
 
-  async updateUser(_req: any, res: IRes) {
+  async getMemberSearch(_req: any, res: any) {
+    const { id } = _req.params;
+    const result = await this.userService.getMember(id);
+    const mapResult: MemberOptionDTO[] = result.map((u) => ({
+      id: u.id.toString(),
+      fullname: u.fullname,
+      email: u.email
+    }));
+    res.header("Access-Control-Allow-Origin", "*");
+
+    return res.status(HttpStatusCodes.OK).send(mapResult).end();
+  }
+
+  async updateUser(_req: any, res: any) {
     const updateName = _req.body;
     const result = await this.userService.updateName(updateName);
     return res
@@ -98,7 +117,7 @@ export default class UserController {
     return this.userService.getUsers();
   }
 
-  async login(_req: any, _res: IRes) {
+  async login(_req: any, _res: any) {
     const login: LoginDTO = _req.body;
     const account = await this.userService.login(login);
     const { id } = account;
@@ -115,13 +134,13 @@ export default class UserController {
       .end();
   }
 
-  async signup(_req: any, _res: IRes) {
+  async signup(_req: any, _res: any) {
     const signup: SignupDTO = _req.body;
     await this.userService.signup(signup);
     return _res.status(HttpStatusCodes.OK).end();
   }
 
-  async googleAuthen(_req: any, _res: IRes) {
+  async googleAuthen(_req: any, _res: any) {
     const google: GoogleDTO = _req.body;
     const { user, newAccount } = await this.userService.googleAuthen(google);
     const { id } = user;
@@ -146,13 +165,13 @@ export default class UserController {
     return _res.status(HttpStatusCodes.OK).end();
   }
 
-  async activeAccount(_req: any, _res: IRes) {
+  async activeAccount(_req: any, _res: any) {
     const { emailToken } = _req.params;
     await this.userService.activeAccount(emailToken);
     return _res.status(HttpStatusCodes.OK).end();
   }
 
-  async getUser(_req: any, _res: IRes) {
+  async getUser(_req: any, _res: any) {
     const { id } = _req.params;
     const result = await this.userService.getUser(id);
 
@@ -167,7 +186,7 @@ export default class UserController {
       .end();
   }
 
-  async getMemberSelection(req: any, res: IRes) {
+  async getMemberSelection(req: any, res: any) {
     const { id } = req.params;
     const result = await this.userService.getMember(id);
     const mapResult = result.map((u) => ({

@@ -85,9 +85,21 @@ const socketServer = (app: Express) => {
     // In-game handling #############################################
     socket.on(
       "submit_answer",
-      (data: { question: number; id: string; game: string }) => {
-        const { question, id, game } = data;
+      (data: {
+        question: number;
+        username: string;
+        id: string;
+        correct: boolean;
+        game: string;
+      }) => {
+        const { question, username, id, correct, game } = data;
         const targetGame = games.find((g) => g.game === game);
+        gameService.handleChoiceResult(game, question, {
+          username,
+          answer: id,
+          correct,
+          createdAt: new Date()
+        });
         if (targetGame) {
           socket.to(game).emit("submit_answer", { id });
           console.log(
@@ -122,7 +134,7 @@ const socketServer = (app: Express) => {
       }
     });
 
-    // Chat handling ################################################
+    // Chat & Question handling #####################################
     socket.on(
       "send_chat_msg",
       (data: {
@@ -138,16 +150,84 @@ const socketServer = (app: Express) => {
           socket
             .to(game)
             .emit("receive_chat_msg", { username, chat, role, date });
-          gameService.updateChat(game, {
+          gameService.newChat(game, {
             username,
             chat,
             role,
             createdAt: date
           });
-          console.log(`--[SOCKET/CHAT/${game}] ${username}: ${chat}`);
+          console.log(`--[SOCKET/CHAT/${game}] ${username}: ${chat}\n`);
         }
       }
     );
+
+    socket.on(
+      "send_question_msg",
+      (data: {
+        idx: number;
+        username: string;
+        question: string;
+        date: Date;
+        role: number;
+        game: string;
+      }) => {
+        const { idx, username, question, date, role, game } = data;
+        const targetGame = games.find((g) => g.game === game);
+        if (targetGame) {
+          socket.to(game).emit("receive_question_msg", {
+            idx,
+            username,
+            question,
+            role,
+            date
+          });
+          gameService.newQuestion(game, {
+            idx,
+            username,
+            question,
+            role,
+            answered: false,
+            vote: 0,
+            createdAt: date
+          });
+          console.log(
+            `--[SOCKET/QUESTION/${game}] Q.${idx}-${username}: ${question}\n`
+          );
+        }
+      }
+    );
+
+    socket.on("send_vote", (data: { idx: number; game: string }) => {
+      const { idx, game } = data;
+      const targetGame = games.find((g) => g.game === game);
+      if (targetGame) {
+        socket.to(game).emit("receive_vote", { idx });
+        gameService.voteQuestion(game, idx, true);
+        console.log(`--[SOCKET/QUESTION/${game}] Q.${idx} received 1 upvote\n`);
+      }
+    });
+
+    socket.on("send_unvote", (data: { idx: number; game: string }) => {
+      const { idx, game } = data;
+      const targetGame = games.find((g) => g.game === game);
+      if (targetGame) {
+        socket.to(game).emit("receive_unvote", { idx });
+        gameService.voteQuestion(game, idx, false);
+        console.log(`--[SOCKET/QUESTION/${game}] Q.${idx} got 1 less vote\n`);
+      }
+    });
+
+    socket.on("send_answered", (data: { idx: number; game: string }) => {
+      const { idx, game } = data;
+      const targetGame = games.find((g) => g.game === game);
+      if (targetGame) {
+        socket.to(game).emit("receive_answered", { idx });
+        gameService.answeredQuestion(game, idx);
+        console.log(
+          `--[SOCKET/QUESTION/${game}] Q.${idx} is marked as answered\n`
+        );
+      }
+    });
 
     // User handling ################################################
     socket.on("join_game", (data: { username: string; game: string }) => {

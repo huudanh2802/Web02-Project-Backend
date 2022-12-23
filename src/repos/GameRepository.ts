@@ -22,4 +22,13 @@ export default class GameRepository extends BaseRepository<GameModel, IGame> {
     });
     return result;
   }
+
+  async qResultExist(game: string, question: number) {
+    const exist = await this.set.findOne({
+      game,
+      "result.question": question
+    });
+    console.log(exist);
+    return exist !== null;
+  }
 }
