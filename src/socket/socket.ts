@@ -36,6 +36,7 @@ const socketServer = (app: Express) => {
     groupRepository,
     userRepository
   );
+
   const io = new Server(server, {
     cors: {
       origin: EnvVars.clientHost,
@@ -108,7 +109,21 @@ const socketServer = (app: Express) => {
             });
           }
         }
-        games.push({ game, presentation, users: [], cohosts: [], group });
+        games.push({
+          game,
+          presentation,
+          users: [],
+          cohosts: [],
+          group,
+          slide: -1,
+          answer: [
+            { id: "A", count: 0 },
+            { id: "B", count: 0 },
+            { id: "C", count: 0 },
+            { id: "D", count: 0 }
+          ],
+          showAnswer: false
+        });
         console.log(`--[SOCKET/GAME]\n${JSON.stringify(games)}\n`);
 
         console.log(`--[SOCKET/CREATE] Game ${game} has been initiated\n`);
@@ -121,6 +136,7 @@ const socketServer = (app: Express) => {
       socket.to(game).emit("start_game");
       const targetGame = games.find((g) => g.game === game);
       if (targetGame) {
+        targetGame.slide = 0;
         console.log(`--[SOCKET/CREATE] Game ${game} has started\n`);
       } else {
         console.log(
@@ -195,8 +211,10 @@ const socketServer = (app: Express) => {
           socket.emit("join_game_result", {
             success,
             game: targetGame.game,
-            presentation: targetGame.presentation
+            presentation: targetGame.presentation,
+            slide: targetGame.slide
           });
+
           console.log(`--[SOCKET/JOIN] ${username} has joined the game\n`);
           console.log(
             `--[SOCKET/JOIN] Game ${targetGame.game}\n${JSON.stringify(
@@ -225,6 +243,18 @@ const socketServer = (app: Express) => {
       }
     );
 
+    socket.on("request_current_slide", (data: { game: string }) => {
+      const targetGame = games.find((g) => g.game === data.game);
+      if (targetGame) {
+        console.log(`${JSON.stringify(targetGame)}\n`);
+        socket.emit("result_current_slide", {
+          slide: targetGame.slide,
+          answer: targetGame.answer,
+          showAnswer: targetGame.showAnswer
+        });
+      }
+    });
+
     socket.on("join_host_game", (data: { username: string; game: string }) => {
       const { username, game } = data;
       socket.join(game);
@@ -242,7 +272,8 @@ const socketServer = (app: Express) => {
         console.log(targetGame);
         socket.emit("join_host_game_result", {
           game: targetGame.game,
-          presentation: targetGame.presentation
+          presentation: targetGame.presentation,
+          slide: targetGame.slide
         });
         console.log(
           `--[SOCKET/JOIN] All Co-Hosts\n${JSON.stringify(allCoHosts)}\n`
@@ -343,6 +374,8 @@ const socketServer = (app: Express) => {
           createdAt
         });
         if (targetGame) {
+          const answerIdx = targetGame.answer.findIndex((a) => a.id === id);
+          targetGame.answer[answerIdx].count += 1;
           socket
             .to(game)
             .emit("submit_answer", { username, id, correct, createdAt });
@@ -359,6 +392,7 @@ const socketServer = (app: Express) => {
       const { game, slide } = data;
       const targetGame = games.find((g) => g.game === game);
       if (targetGame) {
+        targetGame.showAnswer = true;
         socket.to(game).emit("show_answer");
         const mutipleChoice = slide as MutipleChoiceDTO;
         console.log(
@@ -373,6 +407,14 @@ const socketServer = (app: Express) => {
       const { game, slide } = data;
       const targetGame = games.find((g) => g.game === game);
       if (targetGame) {
+        targetGame.answer = [
+          { id: "A", count: 0 },
+          { id: "B", count: 0 },
+          { id: "C", count: 0 },
+          { id: "D", count: 0 }
+        ];
+        targetGame.showAnswer = false;
+        targetGame.slide += 1;
         socket.to(game).emit("next_question");
         console.log(`--[SOCKET/NEXT] Continued to Question ${slide.idx + 1}\n`);
       }
