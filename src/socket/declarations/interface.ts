@@ -8,6 +8,7 @@ export interface Game {
   game: string;
   presentation: string;
   users: User[];
+  cohosts: User[];
   group: string | null;
 }
 

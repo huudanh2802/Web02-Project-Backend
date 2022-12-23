@@ -8,7 +8,7 @@ import GameService from "@src/services/GameService";
 import GameRepository from "@src/repos/GameRepository";
 import PresentationRepository from "@src/repos/PresentationRepository";
 import { Server } from "socket.io";
-import leaveGame from "@src/socket/utils/leavegame";
+import { leaveGame, leaveGameCoHost } from "@src/socket/utils/leavegame";
 import { Types } from "mongoose";
 
 import { User, Game, Group } from "@src/socket/declarations/interface";
@@ -20,6 +20,7 @@ const socketServer = (app: Express) => {
 
   let games: Game[] = [];
   let allUsers: User[] = [];
+  let allCoHosts: User[] = [];
   let groups: Group[] = [];
 
   const gameRepository: GameRepository = new GameRepository();
@@ -107,7 +108,7 @@ const socketServer = (app: Express) => {
             });
           }
         }
-        games.push({ game, presentation, users: [], group });
+        games.push({ game, presentation, users: [], cohosts: [], group });
         console.log(`--[SOCKET/GAME]\n${JSON.stringify(games)}\n`);
 
         console.log(`--[SOCKET/CREATE] Game ${game} has been initiated\n`);
@@ -173,6 +174,154 @@ const socketServer = (app: Express) => {
         console.log(`--[SOCKET/FINISH]\n${JSON.stringify(games)}\n`);
       }
     );
+
+    // User handling ################################################
+    socket.on(
+      "join_game",
+      (data: { username: string; game: string; groupId: string }) => {
+        const { username, game, groupId } = data;
+        socket.join(game);
+
+        // Save new user to game
+        const targetGame = games.find((g) => g.game === game);
+        let success = true;
+        if (targetGame && targetGame.group === groupId) {
+          targetGame.users.push({ id: socket.id, username, game });
+          allUsers.push({ id: socket.id, username, game });
+          const targetGameUsers = allUsers.filter((user) => user.game === game);
+          socket.to(game).emit(`${game}_users`, { users: targetGameUsers });
+          socket.emit(`${game}_users`, { users: targetGameUsers });
+
+          socket.emit("join_game_result", {
+            success,
+            game: targetGame.game,
+            presentation: targetGame.presentation
+          });
+          console.log(`--[SOCKET/JOIN] ${username} has joined the game\n`);
+          console.log(
+            `--[SOCKET/JOIN] Game ${targetGame.game}\n${JSON.stringify(
+              allUsers
+            )}\n`
+          );
+          console.log(
+            `--[SOCKET/JOIN] All Users\n${JSON.stringify(allUsers)}\n`
+          );
+        } else {
+          let isPrivate = false;
+          success = false;
+          if (targetGame && targetGame.group !== groupId) {
+            isPrivate = true;
+            console.log(
+              `--[SOCKET/JOIN] ${username} tried to join private game ${game}\n`
+            );
+          } else {
+            console.log(
+              `--[SOCKET/JOIN] ${username} tried to join non-existent game ${game}\n`
+            );
+          }
+          socket.emit("join_game_result", { success, game, isPrivate });
+          socket.leave(game);
+        }
+      }
+    );
+
+    socket.on("join_host_game", (data: { username: string; game: string }) => {
+      const { username, game } = data;
+      socket.join(game);
+
+      // Save new user to game
+      const targetGame = games.find((g) => g.game === game);
+      if (targetGame) {
+        targetGame.cohosts.push({ id: socket.id, username, game });
+        allCoHosts.push({ id: socket.id, username, game });
+        const targetGameCoHosts = allCoHosts.filter(
+          (user) => user.game === game
+        );
+        socket.to(game).emit(`${game}_cohosts`, { cohosts: targetGameCoHosts });
+        socket.emit(`${game}_cohosts`, { cohosts: targetGameCoHosts });
+        console.log(targetGame);
+        socket.emit("join_host_game_result", {
+          game: targetGame.game,
+          presentation: targetGame.presentation
+        });
+        console.log(
+          `--[SOCKET/JOIN] All Co-Hosts\n${JSON.stringify(allCoHosts)}\n`
+        );
+        console.log(
+          `--[SOCKET/JOIN] ${username} has joined to co-host the game ${targetGame}\n`
+        );
+      } else {
+        socket.leave(game);
+      }
+    });
+
+    socket.on("leave_game", (data) => {
+      const { username, game } = data;
+      socket.leave(game);
+      if (username) {
+        const targetGame = games.find((g) => g.game === game);
+        if (targetGame) {
+          targetGame.users = leaveGame(socket.id, targetGame.users);
+          targetGame.cohosts = leaveGameCoHost(socket.id, targetGame.cohosts);
+          socket
+            .to(targetGame.game)
+            .emit(`${game}_users`, { users: targetGame.users });
+          socket
+            .to(targetGame.game)
+            .emit(`${game}_cohosts`, { cohosts: targetGame.cohosts });
+          console.log(
+            `--[SOCKET/LEAVE] ${username} has left game ${targetGame.game}\n`
+          );
+          console.log(
+            `--[SOCKET/LEAVE] Game ${targetGame.game}\n${JSON.stringify(
+              targetGame.users
+            )}\n`
+          );
+        }
+        allUsers = leaveGame(socket.id, allUsers);
+        allCoHosts = leaveGameCoHost(socket.id, allCoHosts);
+        console.log(
+          `--[SOCKET/LEAVE] All Users\n${JSON.stringify(allUsers)}\n`
+        );
+        console.log(
+          `--[SOCKET/LEAVE] All Co-Hosts\n${JSON.stringify(allCoHosts)}\n`
+        );
+      }
+    });
+
+    socket.on("disconnect", () => {
+      const user = allUsers.find((u) => u.id === socket.id);
+      if (user?.username) {
+        const targetGame = games.find((g) => g.game === user.game);
+        if (targetGame) {
+          targetGame.users = leaveGame(socket.id, targetGame.users);
+          socket
+            .to(targetGame.game)
+            .emit(`${targetGame.game}_users`, { users: targetGame.users });
+          socket.to(targetGame.game).emit(`${targetGame.game}_cohosts`, {
+            cohosts: targetGame.cohosts
+          });
+          console.log(
+            `--[SOCKET/DISCON] ${user.username} has disconnected from game ${targetGame.game}\n`
+          );
+          console.log(
+            `--[SOCKET/DISCON] Game ${targetGame.game}\n${JSON.stringify(
+              targetGame.users
+            )}\n`
+          );
+        }
+        allUsers = leaveGame(socket.id, allUsers);
+        allCoHosts = leaveGameCoHost(socket.id, allCoHosts);
+        console.log(
+          `--[SOCKET/DISCON] All Users\n${JSON.stringify(allUsers)}\n`
+        );
+        console.log(
+          `--[SOCKET/DISCON] All Co-Hosts\n${JSON.stringify(allCoHosts)}\n`
+        );
+      } else {
+        console.log(`--[SOCKET/DISCON] User ${socket.id} has disconnected\n`);
+      }
+    });
 
     // In-game handling #############################################
     socket.on(
@@ -321,107 +470,6 @@ const socketServer = (app: Express) => {
         console.log(
           `--[SOCKET/QUESTION/${game}] Q.${idx} is marked as answered\n`
         );
-      }
-    });
-
-    // User handling ################################################
-    socket.on(
-      "join_game",
-      (data: { username: string; game: string; groupId: string }) => {
-        const { username, game, groupId } = data;
-        socket.join(game);
-
-        // Save new user to game
-        const targetGame = games.find((g) => g.game === game);
-        console.log(targetGame?.group);
-        console.log(groupId);
-        let success = true;
-        if (targetGame && targetGame.group === groupId) {
-          targetGame.users.push({ id: socket.id, username, game });
-          allUsers.push({ id: socket.id, username, game });
-          const targetGameUsers = allUsers.filter((user) => user.game === game);
-          socket.to(game).emit(`${game}_users`, { users: targetGameUsers });
-          socket.emit(`${game}_users`, { users: targetGameUsers });
-
-          socket.emit("join_game_result", {
-            success,
-            game: targetGame.game,
-            presentation: targetGame.presentation
-          });
-          console.log(`--[SOCKET/JOIN] ${username} has joined the game\n`);
-          console.log(
-            `--[SOCKET/JOIN] Game ${targetGame.game}\n${JSON.stringify(
-              allUsers
-            )}\n`
-          );
-          console.log(
-            `--[SOCKET/JOIN] All Users\n${JSON.stringify(allUsers)}\n`
-          );
-        } else {
-          let isPrivate = false;
-          success = false;
-          if (targetGame && targetGame.group !== groupId) {
-            isPrivate = true;
-            console.log(
-              `--[SOCKET/JOIN] ${username} tried to join private game ${game}\n`
-            );
-          } else {
-            console.log(
-              `--[SOCKET/JOIN] ${username} tried to join non-existent game ${game}\n`
-            );
-          }
-          socket.emit("join_game_result", { success, game, isPrivate });
-          socket.leave(game);
-        }
-      }
-    );
-
-    socket.on("leave_game", (data) => {
-      const { username, game } = data;
-      socket.leave(game);
-      const targetGame = games.find((g) => g.game === game);
-      if (targetGame) {
-        targetGame.users = leaveGame(socket.id, targetGame.users);
-        socket
-          .to(targetGame.game)
-          .emit(`${game}_users`, { users: targetGame.users });
-        console.log(
-          `--[SOCKET/LEAVE] ${username} has left game ${targetGame.game}\n`
-        );
-        console.log(
-          `--[SOCKET/LEAVE] Game ${targetGame.game}\n${JSON.stringify(
-            targetGame.users
-          )}\n`
-        );
-      }
-      allUsers = leaveGame(socket.id, allUsers);
-      console.log(`--[SOCKET/LEAVE] All Users\n${JSON.stringify(allUsers)}\n`);
-    });
-
-    socket.on("disconnect", () => {
-      const user = allUsers.find((u) => u.id === socket.id);
-      if (user?.username) {
-        const targetGame = games.find((g) => g.game === user.game);
-        if (targetGame) {
-          targetGame.users = leaveGame(socket.id, targetGame.users);
-          socket
-            .to(targetGame.game)
-            .emit(`${targetGame.game}_users`, { users: targetGame.users });
-          console.log(
-            `--[SOCKET/DISCON] ${user.username} has disconnected from game ${targetGame.game}\n`
-          );
-          console.log(
-            `--[SOCKET/DISCON] Game ${targetGame.game}\n${JSON.stringify(
-              targetGame.users
-            )}\n`
-          );
-        }
-        allUsers = leaveGame(socket.id, allUsers);
-        console.log(
-          `--[SOCKET/DISCON] All Users\n${JSON.stringify(allUsers)}\n`
-        );
-      } else {
-        console.log(`--[SOCKET/DISCON] User ${socket.id} has disconnected\n`);
       }
     });
   });
