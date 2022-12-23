@@ -27,7 +27,7 @@ export type ParagraphDTO = Slide & {
 };
 
 export type SlideDTO = MutipleChoiceDTO | HeadingDTO | ParagraphDTO;
-export interface PresentationDTOV2 {
+export interface PresentationDTO {
   name: string;
   creator: string;
   slides: SlideDTO[];

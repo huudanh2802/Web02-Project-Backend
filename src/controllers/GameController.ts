@@ -5,9 +5,8 @@ import {
   HeadingDTO,
   MutipleChoiceDTO,
   ParagraphDTO,
-  PresentationDTOV2
+  PresentationDTO
 } from "@src/domains/dtos/PresentationDTO";
-import { IRes } from "@src/domains/entities/types";
 import {
   IAnswer,
   IHeading,
@@ -58,12 +57,12 @@ export default class GameController {
     return this.router;
   }
 
-  async getPresentation(_req: any, res: IRes) {
+  async getPresentation(_req: any, res: any) {
     const id = _req.params;
     const result = await this.presentationService.getPresentation(
       new Types.ObjectId(id)
     );
-    const presentationDTO: PresentationDTOV2 = {
+    const presentationDTO: PresentationDTO = {
       name: result.name,
       creator: result.creator,
       slides: result.slides.map((slide: ISlide, idx: number) => {
@@ -125,6 +124,7 @@ export default class GameController {
       presentationId,
       groupId
     );
+
     return res.status(HttpStatusCodes.OK).send(result.id);
   }
 }
