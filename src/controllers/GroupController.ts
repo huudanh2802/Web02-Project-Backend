@@ -1,6 +1,5 @@
 /* eslint-disable no-return-await */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { IRes } from "@src/domains/entities/types";
 import GroupService from "@src/services/GroupService";
 import { Router } from "express";
 import { autoInjectable } from "tsyringe";
@@ -73,7 +72,7 @@ export default class GroupController {
     return this.router;
   }
 
-  async inviteByEmail(_req: any, res: IRes) {
+  async inviteByEmail(_req: any, res: any) {
     const email = _req.body;
     const groupId = _req.params;
     await this.groupService.inviteByEmail(
@@ -87,7 +86,7 @@ export default class GroupController {
       .end();
   }
 
-  async autoJoin(_req: any, res: IRes) {
+  async autoJoin(_req: any, res: any) {
     const userId = _req.body;
     const groupId = _req.params;
     const result = await this.groupService.autojoin(
@@ -97,7 +96,7 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(result.id).end();
   }
 
-  async modifyMember(_req: any, res: IRes) {
+  async modifyMember(_req: any, res: any) {
     const modifyGroup: ModifyGroupDTO = _req.body;
     const { group, owner, coowner, member } =
       await this.groupService.modifyMember(modifyGroup);
@@ -123,7 +122,7 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(result).end();
   }
 
-  async deleteMember(_req: any, res: IRes) {
+  async deleteMember(_req: any, res: any) {
     const modifyGroup: ModifyGroupDTO = _req.body;
     const { group, owner, coowner, member } =
       await this.groupService.deleteMember(modifyGroup);
@@ -149,7 +148,7 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(result).end();
   }
 
-  async get(_req: any, res: IRes) {
+  async get(_req: any, res: any) {
     const { id } = _req.params;
     const { group, owner, coowner, member } = await this.groupService.get(id);
     // eslint-disable-next-line no-console
@@ -175,7 +174,7 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(result).end();
   }
 
-  async checkOwner(_req: any, res: IRes) {
+  async checkOwner(_req: any, res: any) {
     const checkOwner: CheckOwnerDTO = _req.body;
     // eslint-disable-next-line no-console
     console.log(_req.body);
@@ -186,7 +185,7 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(ownGroups).end();
   }
 
-  async getOwnGroup(_req: any, res: IRes) {
+  async getOwnGroup(_req: any, res: any) {
     const { id } = _req.params;
     const result = await this.groupService.getOwnGroup(id);
     const groupDto: GroupDTO[] = result.map((g) => ({
@@ -198,7 +197,7 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(groupDto).end();
   }
 
-  async getMemberGroup(_req: any, res: IRes) {
+  async getMemberGroup(_req: any, res: any) {
     const { id } = _req.params;
     const result = await this.groupService.getMemberGroup(id);
     const groupDto: GroupDTO[] = result.map((g) => ({
@@ -210,7 +209,7 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(groupDto).end();
   }
 
-  async newGroup(_req: any, res: IRes) {
+  async newGroup(_req: any, res: any) {
     const newGroup: NewGroupDTO = _req.body;
     const result = await this.groupService.createNewGroup(newGroup);
     return res.status(HttpStatusCodes.OK).send(result.id).end();

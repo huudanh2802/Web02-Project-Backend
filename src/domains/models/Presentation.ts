@@ -41,7 +41,7 @@ export interface IQuestion {
 export interface IPresentation extends IBase {
   name: string;
   creator: Types.ObjectId;
-  collabs?: Types.ObjectId[];
+  collabs: Types.ObjectId[];
   slides: ISlide[];
   createdAt: Date;
   questionList?: IQuestion[];
