@@ -1,13 +1,17 @@
 import { Express } from "express";
 import EnvVars from "@src/declarations/major/EnvVars";
 import http from "http";
+import GroupService from "@src/services/GroupService";
+import GroupRepository from "@src/repos/GroupRepository";
+import UserRepository from "@src/repos/UserRepository";
 import GameService from "@src/services/GameService";
 import GameRepository from "@src/repos/GameRepository";
 import PresentationRepository from "@src/repos/PresentationRepository";
 import { Server } from "socket.io";
 import leaveGame from "@src/socket/utils/leavegame";
+import { Types } from "mongoose";
 
-import { User, Game } from "@src/socket/declarations/interface";
+import { User, Game, Group } from "@src/socket/declarations/interface";
 import { MutipleChoiceDTO, Slide } from "@src/domains/dtos/PresentationDTO";
 
 const socketServer = (app: Express) => {
@@ -16,6 +20,7 @@ const socketServer = (app: Express) => {
 
   let games: Game[] = [];
   let allUsers: User[] = [];
+  let groups: Group[] = [];
 
   const gameRepository: GameRepository = new GameRepository();
   const presentationRepository: PresentationRepository =
@@ -23,6 +28,12 @@ const socketServer = (app: Express) => {
   const gameService: GameService = new GameService(
     gameRepository,
     presentationRepository
+  );
+  const groupRepository: GroupRepository = new GroupRepository();
+  const userRepository: UserRepository = new UserRepository();
+  const groupService: GroupService = new GroupService(
+    groupRepository,
+    userRepository
   );
   const io = new Server(server, {
     cors: {
@@ -33,10 +44,36 @@ const socketServer = (app: Express) => {
   io.on("connection", (socket) => {
     console.log(`--[SOCKET/CONNECT] User connected ${socket.id}\n`);
 
+    // Group rooms handling #########################################
+    socket.on("join_all_room", async (data: { userId: Types.ObjectId }) => {
+      const { userId } = data;
+      const ownGroup = await groupService.getOwnGroup(userId);
+      const memberGroup = await groupService.getMemberGroup(userId);
+      const ownGroupId: Group[] = ownGroup.map((g) => ({
+        id: g.id,
+        name: g.name,
+        createdAt: g.createdAt
+      }));
+      const memberGroupId: Group[] = memberGroup.map((g) => ({
+        id: g.id,
+        name: g.name,
+        createdAt: g.createdAt
+      }));
+
+      groups = [...ownGroupId, ...memberGroupId];
+      groups.forEach((group) => {
+        socket.join(group.id);
+      });
+    });
+
     // Game state handling ##########################################
     socket.on(
       "create_game",
-      (data: { game: string; presentation: string; group: string | null }) => {
+      async (data: {
+        game: string;
+        presentation: string;
+        group: string | null;
+      }) => {
         const { game, presentation, group } = data;
         socket.join(game);
 
@@ -50,6 +87,24 @@ const socketServer = (app: Express) => {
             console.log(
               `--[SOCKET/DISRUPT] Group ${group}: Game ${targetGame.game} is replaced with Game ${game}\n`
             );
+          }
+          const targetGroup = groups.find((g) => g.id === group);
+          if (targetGroup) {
+            socket
+              .to(targetGroup.id)
+              .emit("alert_group_present", { groupName: targetGroup.name });
+            console.log(
+              `--[SOCKET/CREATE] Group ${targetGroup.id}: Game ${game} is presented in group ${group}\n`
+            );
+
+            // For those who are already in the group, show the presentation card
+            const curGame = await gameService.getCurrentPresentation(
+              new Types.ObjectId(targetGroup.id)
+            );
+            socket.to(targetGroup.id).emit("show_group_present", {
+              game: curGame.game.game,
+              presentation: curGame.presentation
+            });
           }
         }
         games.push({ game, presentation, users: [], group });
@@ -73,33 +128,51 @@ const socketServer = (app: Express) => {
       }
     });
 
-    socket.on("end_game", (data: { game: string }) => {
-      const { game } = data;
-      const targetGame = games.find((g) => g.game === game);
-      if (targetGame) {
-        games = games.filter((g: Game) => g.game !== game);
-        socket.to(targetGame.game).emit("end_game");
-        gameService.endGame(game);
-        console.log(`--[SOCKET/END] Host has ended game ${targetGame.game}\n`);
+    socket.on(
+      "end_game",
+      (data: { game: string; groupId: string | undefined }) => {
+        const { game, groupId } = data;
+        const targetGame = games.find((g) => g.game === game);
+        if (targetGame) {
+          games = games.filter((g: Game) => g.game !== game);
+          socket.to(targetGame.game).emit("end_game");
+          gameService.endGame(game);
+          console.log(
+            `--[SOCKET/END] Host has ended game ${targetGame.game}\n`
+          );
+
+          // Hide current game in the group
+          if (groupId) {
+            socket.to(groupId).emit("hide_group_present");
+          }
+        }
+
+        socket.leave(game);
+        console.log(`--[SOCKET/END]\n${JSON.stringify(games)}\n`);
       }
+    );
 
-      socket.leave(game);
-      console.log(`--[SOCKET/END]\n${JSON.stringify(games)}\n`);
-    });
+    socket.on(
+      "finish_game",
+      (data: { game: string; groupId: string | undefined }) => {
+        const { game, groupId } = data;
+        const targetGame = games.find((g) => g.game === game);
+        if (targetGame) {
+          games = games.filter((g: Game) => g.game !== game);
+          socket.to(targetGame.game).emit("finish_game");
+          gameService.endGame(game);
+          console.log(`--[SOCKET/FINISH] Game ${targetGame.game} ended\n`);
 
-    socket.on("finish_game", (data: { game: string }) => {
-      const { game } = data;
-      const targetGame = games.find((g) => g.game === game);
-      if (targetGame) {
-        games = games.filter((g: Game) => g.game !== game);
-        socket.to(targetGame.game).emit("finish_game");
-        gameService.endGame(game);
-        console.log(`--[SOCKET/FINISH] Game ${targetGame.game} ended\n`);
+          // Hide current game in the group
+          if (groupId) {
+            socket.to(groupId).emit("hide_group_present");
+          }
+        }
+
+        socket.leave(game);
+        console.log(`--[SOCKET/FINISH]\n${JSON.stringify(games)}\n`);
       }
-
-      socket.leave(game);
-      console.log(`--[SOCKET/FINISH]\n${JSON.stringify(games)}\n`);
-    });
+    );
 
     // In-game handling #############################################
     socket.on(

@@ -10,3 +10,9 @@ export interface Game {
   users: User[];
   group: string | null;
 }
+
+export interface Group {
+  id: string;
+  name: string;
+  createdAt: Date;
+}
