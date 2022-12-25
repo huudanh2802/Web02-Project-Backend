@@ -174,9 +174,17 @@ export default class UserService {
   }
 
   async updatePassword(password: UpdatePasswordDTO) {
+    const user = await this.userRepository.getByEmail(password.email);
+    const checkPass = await bcrypt.compare(password.oldPassword, user.password);
+    if (!checkPass) {
+      throw new RouteError(
+        HttpStatusCodes.FORBIDDEN,
+        "Old password does not match"
+      );
+    }
     const encryptedPassword = await bcrypt.hash(password.newPassword, 10);
     const newResult = await this.userRepository.updatePassword(
-      password.id,
+      password.email,
       encryptedPassword
     );
     return newResult;

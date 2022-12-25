@@ -39,9 +39,9 @@ export default class UserRepository extends BaseRepository<UserModel, IUser> {
     return newResult;
   }
 
-  async updatePassword(confirmId: string, newPassword: string) {
+  async updatePassword(confirmEmail: string, newPassword: string) {
     const newResult = await this.set.findOneAndUpdate(
-      { _id: confirmId },
+      { email: confirmEmail },
       { password: newPassword }
     );
     return newResult;

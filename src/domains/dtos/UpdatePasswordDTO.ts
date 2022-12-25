@@ -1,4 +1,5 @@
 export default interface UpdatePasswordDTO {
-  id: string;
+  email: string;
+  oldPassword: string;
   newPassword: string;
 }
