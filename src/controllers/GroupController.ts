@@ -11,6 +11,7 @@ import GroupInfoDTO from "@src/domains/dtos/GroupInfoDTO";
 import ModifyGroupDTO from "@src/domains/dtos/ModifyGroupDTO";
 import passport from "passport";
 import { Types } from "mongoose";
+import { IRes } from "@src/domains/entities/types";
 
 @autoInjectable()
 export default class GroupController {
@@ -59,6 +60,11 @@ export default class GroupController {
       passport.authenticate("jwt", { session: false }),
       async (_req, res) => await this.get(_req, res)
     );
+    this.router.delete(
+      "/delete/:id",
+      passport.authenticate("jwt", { session: false }),
+      async (_req, res) => await this.delete(_req, res)
+    );
     this.router.post(
       "/autojoin/:id",
       passport.authenticate("jwt", { session: false }),
@@ -72,7 +78,13 @@ export default class GroupController {
     return this.router;
   }
 
-  async inviteByEmail(_req: any, res: any) {
+  async delete(_req: any, res: IRes) {
+    const id = _req.params;
+    await this.groupService.deleteGroup(new Types.ObjectId(id));
+    return res.status(HttpStatusCodes.OK).end();
+  }
+
+  async inviteByEmail(_req: any, res: IRes) {
     const email = _req.body;
     const groupId = _req.params;
     await this.groupService.inviteByEmail(
@@ -86,7 +98,7 @@ export default class GroupController {
       .end();
   }
 
-  async autoJoin(_req: any, res: any) {
+  async autoJoin(_req: any, res: IRes) {
     const userId = _req.body;
     const groupId = _req.params;
     const result = await this.groupService.autojoin(
@@ -96,7 +108,7 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(result.id).end();
   }
 
-  async modifyMember(_req: any, res: any) {
+  async modifyMember(_req: any, res: IRes) {
     const modifyGroup: ModifyGroupDTO = _req.body;
     const { group, owner, coowner, member } =
       await this.groupService.modifyMember(modifyGroup);
@@ -122,7 +134,7 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(result).end();
   }
 
-  async deleteMember(_req: any, res: any) {
+  async deleteMember(_req: any, res: IRes) {
     const modifyGroup: ModifyGroupDTO = _req.body;
     const { group, owner, coowner, member } =
       await this.groupService.deleteMember(modifyGroup);
@@ -148,7 +160,7 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(result).end();
   }
 
-  async get(_req: any, res: any) {
+  async get(_req: any, res: IRes) {
     const { id } = _req.params;
     const { group, owner, coowner, member } = await this.groupService.get(id);
     // eslint-disable-next-line no-console
@@ -174,10 +186,9 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(result).end();
   }
 
-  async checkOwner(_req: any, res: any) {
+  async checkOwner(_req: any, res: IRes) {
     const checkOwner: CheckOwnerDTO = _req.body;
     // eslint-disable-next-line no-console
-    console.log(_req.body);
     const ownGroups = await this.groupService.checkOwnGroup(
       checkOwner.ownerId,
       checkOwner.groupId
@@ -185,7 +196,7 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(ownGroups).end();
   }
 
-  async getOwnGroup(_req: any, res: any) {
+  async getOwnGroup(_req: any, res: IRes) {
     const { id } = _req.params;
     const result = await this.groupService.getOwnGroup(id);
     const groupDto: GroupDTO[] = result.map((g) => ({
@@ -197,7 +208,7 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(groupDto).end();
   }
 
-  async getMemberGroup(_req: any, res: any) {
+  async getMemberGroup(_req: any, res: IRes) {
     const { id } = _req.params;
     const result = await this.groupService.getMemberGroup(id);
     const groupDto: GroupDTO[] = result.map((g) => ({
@@ -209,7 +220,7 @@ export default class GroupController {
     return res.status(HttpStatusCodes.OK).send(groupDto).end();
   }
 
-  async newGroup(_req: any, res: any) {
+  async newGroup(_req: any, res: IRes) {
     const newGroup: NewGroupDTO = _req.body;
     const result = await this.groupService.createNewGroup(newGroup);
     return res.status(HttpStatusCodes.OK).send(result.id).end();

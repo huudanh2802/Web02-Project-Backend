@@ -31,6 +31,11 @@ export default class GroupService {
     this.userRepository = userRepository;
   }
 
+  async deleteGroup(id: Types.ObjectId) {
+    const group = await this.groupRepository.delete(id);
+    return group;
+  }
+
   async inviteByEmail(email: string, groupId: Types.ObjectId) {
     const group = await this.groupRepository.get(groupId);
     const user = await this.userRepository.getByEmail(email);
@@ -190,10 +195,7 @@ export default class GroupService {
 
   async checkOwnGroup(ownerId: Types.ObjectId, groupId: Types.ObjectId) {
     const result = await this.groupRepository.get(groupId);
-    return (
-      result.coowner.includes(ownerId.toString()) ||
-      result.owner.toString() === ownerId.toString()
-    );
+    return result.owner.toString() === ownerId.toString();
   }
 
   async getMemberGroup(id: Types.ObjectId) {

@@ -21,6 +21,7 @@ import { Types } from "mongoose";
 import passport from "passport";
 import { autoInjectable } from "tsyringe";
 import RouteError from "@src/declarations/classes";
+import { IRes } from "@src/domains/entities/types";
 
 @autoInjectable()
 export default class GameController {
@@ -57,7 +58,7 @@ export default class GameController {
     return this.router;
   }
 
-  async getPresentation(_req: any, res: any) {
+  async getPresentation(_req: any, res: IRes) {
     const id = _req.params;
     const result = await this.presentationService.getPresentation(
       new Types.ObjectId(id)

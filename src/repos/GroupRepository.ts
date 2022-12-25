@@ -17,14 +17,14 @@ export default class UserRepository extends BaseRepository<GroupModel, IGroup> {
 
   async getOwnGroup(id: Types.ObjectId) {
     const result = await this.set.find({
-      $or: [{ owner: id }, { coowner: { $in: id } }]
+      owner: id
     });
     return result;
   }
 
   async getMemberGroup(id: Types.ObjectId) {
     const result = await this.set.find({
-      member: { $in: id }
+      $or: [{ member: { $in: id } }, { coowner: { $in: id } }]
     });
     return result;
   }

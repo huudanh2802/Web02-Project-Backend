@@ -80,7 +80,7 @@ export default class UserController {
     return this.router;
   }
 
-  async getMemberSearch(_req: any, res: any) {
+  async getMemberSearch(_req: any, res: IRes) {
     const { id } = _req.params;
     const result = await this.userService.getMember(id);
     const mapResult: MemberOptionDTO[] = result.map((u) => ({
@@ -93,7 +93,7 @@ export default class UserController {
     return res.status(HttpStatusCodes.OK).send(mapResult).end();
   }
 
-  async updateUser(_req: any, res: any) {
+  async updateUser(_req: any, res: IRes) {
     const updateName = _req.body;
     const result = await this.userService.updateName(updateName);
     return res
@@ -117,7 +117,7 @@ export default class UserController {
     return this.userService.getUsers();
   }
 
-  async login(_req: any, _res: any) {
+  async login(_req: any, _res: IRes) {
     const login: LoginDTO = _req.body;
     const account = await this.userService.login(login);
     const { id } = account;
@@ -134,13 +134,13 @@ export default class UserController {
       .end();
   }
 
-  async signup(_req: any, _res: any) {
+  async signup(_req: any, _res: IRes) {
     const signup: SignupDTO = _req.body;
     await this.userService.signup(signup);
     return _res.status(HttpStatusCodes.OK).end();
   }
 
-  async googleAuthen(_req: any, _res: any) {
+  async googleAuthen(_req: any, _res: IRes) {
     const google: GoogleDTO = _req.body;
     const { user, newAccount } = await this.userService.googleAuthen(google);
     const { id } = user;
@@ -165,13 +165,13 @@ export default class UserController {
     return _res.status(HttpStatusCodes.OK).end();
   }
 
-  async activeAccount(_req: any, _res: any) {
+  async activeAccount(_req: any, _res: IRes) {
     const { emailToken } = _req.params;
     await this.userService.activeAccount(emailToken);
     return _res.status(HttpStatusCodes.OK).end();
   }
 
-  async getUser(_req: any, _res: any) {
+  async getUser(_req: any, _res: IRes) {
     const { id } = _req.params;
     const result = await this.userService.getUser(id);
 
@@ -186,7 +186,7 @@ export default class UserController {
       .end();
   }
 
-  async getMemberSelection(req: any, res: any) {
+  async getMemberSelection(req: any, res: IRes) {
     const { id } = req.params;
     const result = await this.userService.getMember(id);
     const mapResult = result.map((u) => ({

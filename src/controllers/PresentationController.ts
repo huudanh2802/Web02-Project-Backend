@@ -10,6 +10,7 @@ import {
   PresentationDTO
 } from "@src/domains/dtos/PresentationDTO";
 import ViewPresentationDTO from "@src/domains/dtos/ViewPresentationDTO";
+import { IRes } from "@src/domains/entities/types";
 import {
   IAnswer,
   IHeading,
@@ -82,7 +83,7 @@ export default class PresentationController {
     return this.router;
   }
 
-  async presentationOwn(_req: any, res: any) {
+  async presentationOwn(_req: any, res: IRes) {
     const userId = _req.params;
     const creatorPrst = await this.presentationService.creatorGet(
       new Types.ObjectId(userId)
@@ -99,7 +100,7 @@ export default class PresentationController {
     return res.status(HttpStatusCodes.OK).send(creatorPresentationDTO).end();
   }
 
-  async presentationCollabs(_req: any, res: any) {
+  async presentationCollabs(_req: any, res: IRes) {
     const userId = _req.params;
     const collabsPrst = await this.presentationService.collabsGet(
       new Types.ObjectId(userId)
@@ -115,7 +116,7 @@ export default class PresentationController {
     return res.status(HttpStatusCodes.OK).send(collabsPresentationDTO).end();
   }
 
-  async updateCollabs(_req: any, res: any) {
+  async updateCollabs(_req: any, res: IRes) {
     const updateCollabs = _req.body;
     const id = _req.params;
     await this.presentationService.updateCollabs(
@@ -125,7 +126,7 @@ export default class PresentationController {
     return res.status(HttpStatusCodes.OK).end();
   }
 
-  async getCollabs(_req: any, res: any) {
+  async getCollabs(_req: any, res: IRes) {
     const id = _req.params;
     const result = await this.presentationService.getCollabs(
       new Types.ObjectId(id)
@@ -138,7 +139,7 @@ export default class PresentationController {
     return res.status(HttpStatusCodes.OK).send(collabsMember).end();
   }
 
-  async deletePresentation(_req: any, res: any) {
+  async deletePresentation(_req: any, res: IRes) {
     const id = _req.params;
     const result = await this.presentationService.deletePresentation(
       new Types.ObjectId(id)
@@ -156,7 +157,7 @@ export default class PresentationController {
       .end();
   }
 
-  async newPresentation(_req: any, res: any) {
+  async newPresentation(_req: any, res: IRes) {
     const newPresentationDTO: PresentationDTO = _req.body;
     const id = await this.presentationService.newPresentation(
       newPresentationDTO
@@ -164,7 +165,7 @@ export default class PresentationController {
     return res.status(HttpStatusCodes.OK).send(id).end();
   }
 
-  async updatePresentation(_req: any, res: any) {
+  async updatePresentation(_req: any, res: IRes) {
     const presentationId = _req.params;
     const presentationDTO: PresentationDTO = _req.body;
     const id = await this.presentationService.updatePresentation(
@@ -174,7 +175,7 @@ export default class PresentationController {
     return res.status(HttpStatusCodes.OK).end();
   }
 
-  async getPresentation(_req: any, res: any) {
+  async getPresentation(_req: any, res: IRes) {
     const id = _req.params;
     const result = await this.presentationService.getPresentation(
       new Types.ObjectId(id)
