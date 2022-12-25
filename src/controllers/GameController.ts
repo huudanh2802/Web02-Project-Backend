@@ -21,6 +21,7 @@ import { Types } from "mongoose";
 import passport from "passport";
 import { autoInjectable } from "tsyringe";
 import RouteError from "@src/declarations/classes";
+import { IRes } from "@src/domains/entities/types";
 
 @autoInjectable()
 export default class GameController {
