@@ -198,6 +198,11 @@ export default class GroupService {
     return result.owner.toString() === ownerId.toString();
   }
 
+  async checkCoOwnGroup(ownerId: Types.ObjectId, groupId: Types.ObjectId) {
+    const result = await this.groupRepository.get(groupId);
+    return result.coowner.includes(ownerId.toString());
+  }
+
   async getMemberGroup(id: Types.ObjectId) {
     const result = await this.groupRepository.getMemberGroup(id);
     return result;
