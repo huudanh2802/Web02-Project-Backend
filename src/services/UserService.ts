@@ -15,6 +15,8 @@ import EnvVars from "@src/declarations/major/EnvVars";
 import mailer from "@src/utils/nodemailler";
 import { Types } from "mongoose";
 import UpdateUserDTO from "@src/domains/dtos/UpdateUserDTO";
+import { RenewPasswordDTO } from "@src/domains/dtos/RenewPasswordDTO";
+import UpdatePasswordDTO from "@src/domains/dtos/UpdatePasswordDTO";
 
 @injectable()
 export default class UserService {
@@ -52,6 +54,36 @@ export default class UserService {
       throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Invalid Password");
     }
     return user;
+  }
+
+  async forgetPassword(renew: RenewPasswordDTO) {
+    const checkEmail = await this.userRepository.getByEmail(renew.email);
+    if (!checkEmail) {
+      throw new RouteError(
+        HttpStatusCodes.NOT_FOUND,
+        "User with this email cannot be found"
+      );
+    }
+
+    const mailOption = {
+      from: EnvVars.email.name,
+      to: renew.email,
+      subject: "Password Reset",
+      html: `<div style="background-color: #0fbbad; padding: 2em 2em;">
+                    <h1 style="text-align: center;">Your password has been reset</h1>
+                    <h4 style="text-align: center;">Your new password is: 123456</h4>
+                </div>`
+    };
+    mailer.sendMail(mailOption, function (err, info) {
+      // eslint-disable-next-line no-console
+      if (err) console.log(err);
+    });
+    const encryptedPassword = await bcrypt.hash("123456", 10);
+    const newResult = await this.userRepository.renewPassword(
+      renew.email,
+      encryptedPassword
+    );
+    return newResult;
   }
 
   async signup(signup: SignupDTO) {
@@ -134,7 +166,27 @@ export default class UserService {
   }
 
   async updateName(name: UpdateUserDTO) {
-    const newName = await this.userRepository.updateName(name);
+    const newName = await this.userRepository.updateName(
+      name.id,
+      name.updatedName
+    );
     return newName;
+  }
+
+  async updatePassword(password: UpdatePasswordDTO) {
+    const user = await this.userRepository.getByEmail(password.email);
+    const checkPass = await bcrypt.compare(password.oldPassword, user.password);
+    if (!checkPass) {
+      throw new RouteError(
+        HttpStatusCodes.FORBIDDEN,
+        "Old password does not match"
+      );
+    }
+    const encryptedPassword = await bcrypt.hash(password.newPassword, 10);
+    const newResult = await this.userRepository.updatePassword(
+      password.email,
+      encryptedPassword
+    );
+    return newResult;
   }
 }

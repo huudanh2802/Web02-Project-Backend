@@ -1,5 +1,4 @@
 /* eslint-disable object-shorthand */
-import UpdateUserDTO from "@src/domains/dtos/UpdateUserDTO";
 import { IUser, UserModel } from "@src/domains/models/User";
 import { Types } from "mongoose";
 import { injectable } from "tsyringe";
@@ -32,12 +31,27 @@ export default class UserRepository extends BaseRepository<UserModel, IUser> {
     return result;
   }
 
-  async updateName(name: UpdateUserDTO) {
-    const result = await this.set.findOneAndUpdate(
-      { _id: name.id },
-      { fullname: name.updatedName }
+  async updateName(confirmId: string, newName: string) {
+    const newResult = await this.set.findOneAndUpdate(
+      { _id: confirmId },
+      { fullname: newName }
     );
-    const newResult = await this.set.findOne({ _id: name.id });
+    return newResult;
+  }
+
+  async updatePassword(confirmEmail: string, newPassword: string) {
+    const newResult = await this.set.findOneAndUpdate(
+      { email: confirmEmail },
+      { password: newPassword }
+    );
+    return newResult;
+  }
+
+  async renewPassword(confirmEmail: string, newPassword: string) {
+    const newResult = await this.set.findOneAndUpdate(
+      { email: confirmEmail },
+      { password: newPassword }
+    );
     return newResult;
   }
 }
