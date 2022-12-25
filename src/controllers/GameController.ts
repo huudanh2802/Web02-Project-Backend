@@ -22,6 +22,7 @@ import passport from "passport";
 import { autoInjectable } from "tsyringe";
 import RouteError from "@src/declarations/classes";
 import { IRes } from "@src/domains/entities/types";
+import ViewPresentationDTO from "@src/domains/dtos/ViewPresentationDTO";
 
 @autoInjectable()
 export default class GameController {
@@ -54,8 +55,43 @@ export default class GameController {
       passport.authenticate("jwt", { session: false }),
       async (_req, res) => await this.newGame(_req, res)
     );
+    this.router.get(
+      "/getview/:id",
+      passport.authenticate("jwt", { session: false }),
 
+      async (_req, res) => await this.getViewPresentation(_req, res)
+    );
     return this.router;
+  }
+
+  async getViewPresentation(_req: any, res: IRes) {
+    const userId = _req.params;
+    const creatorPrst = await this.presentationService.creatorGet(
+      new Types.ObjectId(userId)
+    );
+    const creatorPresentationDTO: ViewPresentationDTO[] = creatorPrst.map(
+      (p) => ({
+        id: p.id,
+        name: p.name,
+        createdAt: p.createdAt,
+        collabs: false
+      })
+    );
+    const collabsPrst = await this.presentationService.collabsGet(
+      new Types.ObjectId(userId)
+    );
+    const collabsPresentationDTO: ViewPresentationDTO[] = collabsPrst.map(
+      (p) => ({
+        id: p.id,
+        name: p.name,
+        createdAt: p.createdAt,
+        collabs: true
+      })
+    );
+    return res
+      .status(HttpStatusCodes.OK)
+      .send([...creatorPresentationDTO, ...collabsPresentationDTO])
+      .end();
   }
 
   async getPresentation(_req: any, res: IRes) {
