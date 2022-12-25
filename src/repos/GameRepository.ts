@@ -23,6 +23,15 @@ export default class GameRepository extends BaseRepository<GameModel, IGame> {
     return result;
   }
 
+  async getByGroupId(groupId: Types.ObjectId) {
+    console.log(groupId);
+    const result = await this.set.findOne({
+      groupId,
+      ended: false
+    });
+    return result;
+  }
+
   async qResultExist(game: string, question: number) {
     const exist = await this.set.findOne({
       game,

@@ -33,6 +33,7 @@ export interface IQResult {
 
 export interface IGame extends IBase {
   game: string;
+  groupId: Types.ObjectId | null;
   presentationId: Types.ObjectId;
   result: IQResult[];
   chat: IChat[];
@@ -44,6 +45,7 @@ export interface IGame extends IBase {
 const gameSchema = new Schema<IGame>(
   {
     game: { type: String, required: true },
+    groupId: { type: Schema.Types.ObjectId, required: false },
     presentationId: { type: Schema.Types.ObjectId, required: true },
     result: { type: Schema.Types.Mixed, required: false },
     chat: { type: Schema.Types.Mixed, required: false },
