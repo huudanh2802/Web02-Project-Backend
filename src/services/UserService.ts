@@ -166,10 +166,9 @@ export default class UserService {
   }
 
   async updateName(name: UpdateUserDTO) {
-    const newName = await this.userRepository.updateName(
-      name.id,
-      name.updatedName
-    );
+    const newName = await this.userRepository.get(new Types.ObjectId(name.id));
+    newName.fullname = name.updatedName;
+    this.userRepository.update(newName);
     return newName;
   }
 
