@@ -200,6 +200,16 @@ export default class GroupService {
 
   async checkCoOwnGroup(ownerId: Types.ObjectId, groupId: Types.ObjectId) {
     const result = await this.groupRepository.get(groupId);
+    if (
+      result.owner.toString() !== ownerId.toString() ||
+      result.coowner.includes(ownerId.toString()) ||
+      result.member.includes(ownerId.toString())
+    ) {
+      throw new RouteError(
+        HttpStatusCodes.BAD_REQUEST,
+        "Member cannot view this group"
+      );
+    }
     return result.coowner.includes(ownerId.toString());
   }
 

@@ -37,6 +37,23 @@ export default class PresentationService {
     this.userRepository = userRepository;
   }
 
+  async checkAutho(presentId: Types.ObjectId, userId: Types.ObjectId) {
+    const present: IPresentation = await this.presentationRepository.get(
+      presentId
+    );
+    if (present.creator.toString() !== userId.toString()) {
+      if (
+        // eslint-disable-next-line no-underscore-dangle
+        !present.collabs.some((a) => a._id.toString() === userId.toString())
+      ) {
+        throw new RouteError(
+          HttpStatusCodes.BAD_REQUEST,
+          "User cannot view this presentation"
+        );
+      }
+    }
+  }
+
   async updateCollabs(id: Types.ObjectId, newCollabs: MemberOptionDTO[]) {
     const presentation: IPresentation = await this.presentationRepository.get(
       id

@@ -80,7 +80,22 @@ export default class PresentationController {
 
       async (_req, res) => await this.presentationCollabs(_req, res)
     );
+    this.router.post(
+      "/checkautho/:id",
+      passport.authenticate("jwt", { session: false }),
+      async (_req, res) => await this.checkAutho(_req, res)
+    );
     return this.router;
+  }
+
+  async checkAutho(req: any, res: IRes) {
+    const presntId = req.params.id;
+    const { userId } = req.body;
+    await this.presentationService.checkAutho(
+      new Types.ObjectId(presntId),
+      new Types.ObjectId(userId)
+    );
+    return res.status(HttpStatusCodes.OK).end();
   }
 
   async presentationOwn(_req: any, res: IRes) {
