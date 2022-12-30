@@ -144,6 +144,7 @@ export default class UserController {
     const google: GoogleDTO = _req.body;
     const { user, newAccount } = await this.userService.googleAuthen(google);
     const { id } = user;
+    console.log(id);
     const token = jwt.sign({ id }, EnvVars.jwt.secret, { expiresIn: "1d" });
 
     return _res

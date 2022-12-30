@@ -140,8 +140,8 @@ export default class UserService {
         id: new Types.ObjectId()
       };
 
-      await this.userRepository.create(newUser);
-      return { user: newUser, newAccount: true };
+      const result = await this.userRepository.create(newUser);
+      return { user: result, newAccount: true };
     }
 
     // Check Active
