@@ -58,8 +58,12 @@ export default class GameController {
     this.router.get(
       "/getview/:id",
       passport.authenticate("jwt", { session: false }),
-
       async (_req, res) => await this.getViewPresentation(_req, res)
+    );
+    this.router.get(
+      "/getsession/:presentationId",
+      passport.authenticate("jwt", { session: false }),
+      async (_req, res) => await this.getGameSessions(_req, res)
     );
     return this.router;
   }
@@ -163,5 +167,13 @@ export default class GameController {
     );
 
     return res.status(HttpStatusCodes.OK).send(result.id);
+  }
+
+  async getGameSessions(_req: any, res: IRes) {
+    const { presentationId } = _req.params;
+    const result = await this.gameService.getGameSessions(
+      new Types.ObjectId(presentationId)
+    );
+    return res.status(HttpStatusCodes.OK).send(result).end();
   }
 }

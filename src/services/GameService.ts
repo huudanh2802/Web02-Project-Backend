@@ -152,4 +152,9 @@ export default class GameService {
     const result = await this.gameRepository.update(updatedGame);
     return result.id;
   }
+
+  async getGameSessions(presentationId: Types.ObjectId) {
+    const result = await this.gameRepository.getByPresentation(presentationId);
+    return result;
+  }
 }

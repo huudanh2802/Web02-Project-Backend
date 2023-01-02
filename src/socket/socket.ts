@@ -369,7 +369,7 @@ const socketServer = (app: Express) => {
         const createdAt = new Date();
         gameService.handleChoiceResult(game, question, {
           username,
-          answer: id,
+          id,
           correct,
           createdAt
         });
