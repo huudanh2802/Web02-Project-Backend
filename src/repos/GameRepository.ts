@@ -11,7 +11,7 @@ export default class GameRepository extends BaseRepository<GameModel, IGame> {
   }
 
   async getByPresentation(presentationId: Types.ObjectId) {
-    const result = await this.set.find({ presentationId });
+    const result = await this.set.find({ presentationId, ended: true });
     return result;
   }
 
