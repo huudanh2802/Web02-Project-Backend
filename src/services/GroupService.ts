@@ -198,8 +198,9 @@ export default class GroupService {
     return result.owner.toString() === ownerId.toString();
   }
 
-  async checkCoOwnGroup(ownerId: Types.ObjectId, groupId: Types.ObjectId) {
+  async checkAutho(ownerId: Types.ObjectId, groupId: Types.ObjectId) {
     const result = await this.groupRepository.get(groupId);
+
     if (
       result.owner.toString() === ownerId.toString() ||
       result.coowner.includes(ownerId.toString()) ||
@@ -211,6 +212,11 @@ export default class GroupService {
       HttpStatusCodes.BAD_REQUEST,
       "Member cannot view this group"
     );
+  }
+
+  async checkCoOwnGroup(ownerId: Types.ObjectId, groupId: Types.ObjectId) {
+    const result = await this.groupRepository.get(groupId);
+    return result.coowner.includes(ownerId.toString());
   }
 
   async getMemberGroup(id: Types.ObjectId) {

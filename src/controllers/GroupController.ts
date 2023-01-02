@@ -50,6 +50,11 @@ export default class GroupController {
       passport.authenticate("jwt", { session: false }),
       async (_req, res) => await this.checkCoOwner(_req, res)
     );
+    this.router.post(
+      "/checkautho",
+      passport.authenticate("jwt", { session: false }),
+      async (_req, res) => await this.checkAutho(_req, res)
+    );
     this.router.delete(
       "/member",
       passport.authenticate("jwt", { session: false }),
@@ -210,6 +215,16 @@ export default class GroupController {
       checkCoOwner.groupId
     );
     return res.status(HttpStatusCodes.OK).send(ownGroups).end();
+  }
+
+  async checkAutho(_req: any, res: any) {
+    const checkCoOwner: CheckOwnerDTO = _req.body;
+    // eslint-disable-next-line no-console
+    const ownGroups = await this.groupService.checkAutho(
+      checkCoOwner.ownerId,
+      checkCoOwner.groupId
+    );
+    return res.status(HttpStatusCodes.OK).end();
   }
 
   async getOwnGroup(_req: any, res: IRes) {
